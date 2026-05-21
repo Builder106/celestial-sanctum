@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --color-sanctum-bg: #131313;
+  --color-sanctum-primary: #730c29;
+  --color-sanctum-accent: #337ab7;
+  --color-sanctum-surface: #1e1e1e;
+  --color-sanctum-border: #333333;
+  --color-sanctum-text: #f3f4f6;
+
+  --font-heading: "Raleway", sans-serif;
+  --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
