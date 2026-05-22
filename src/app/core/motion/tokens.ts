@@ -43,10 +43,49 @@ export const STAGGER = {
 } as const;
 
 /**
- * Returns `true` when the user has indicated they prefer reduced motion.
- * SSR-safe — returns `false` on the server (animations never run there anyway).
+ * Returns `true` when reduced motion should be honored.
+ *
+ * Honors three sources, in order of precedence:
+ *  1. A session-cached override from a previous `?motion=...` query param
+ *  2. A fresh `?motion=force` (always animate) or `?motion=reduce` (never
+ *     animate) URL parameter, which is then cached for the session
+ *  3. The OS / browser `prefers-reduced-motion: reduce` media query
+ *
+ * The query-param override is for testing and demos — users with Reduce
+ * Motion enabled at the OS level usually have it on for a reason (motion
+ * sickness, vestibular sensitivity), and respecting that signal is the
+ * default. The override is opt-in per browser session.
+ *
+ * SSR-safe — returns `false` on the server (animations never run there).
  */
 export function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined' || !window.matchMedia) return false;
+
+  // Session-cached override wins
+  try {
+    const cached = window.sessionStorage?.getItem('sanctum:motion');
+    if (cached === 'force') return false;
+    if (cached === 'reduce') return true;
+  } catch {
+    // sessionStorage may throw in private mode / sandboxed iframes
+  }
+
+  // Pick up `?motion=force` or `?motion=reduce` and cache it for the session
+  try {
+    const motion = new URLSearchParams(window.location.search).get('motion');
+    if (motion === 'force') {
+      try {
+        window.sessionStorage?.setItem('sanctum:motion', 'force');
+      } catch {}
+      return false;
+    }
+    if (motion === 'reduce') {
+      try {
+        window.sessionStorage?.setItem('sanctum:motion', 'reduce');
+      } catch {}
+      return true;
+    }
+  } catch {}
+
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }

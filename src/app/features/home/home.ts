@@ -37,8 +37,7 @@ import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
         <img
           src="/img/banner12c.jpg"
           alt="A sister in white sutana reading a Celestial Church hymnbook"
-          class="w-full h-full object-cover ken-burns"
-          style="object-position: 65% 30%;"
+          class="w-full h-full object-cover ken-burns object-[85%_25%] md:object-[65%_30%]"
           fetchpriority="high"
         />
       </div>
