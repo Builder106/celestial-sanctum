@@ -1,0 +1,121 @@
+body {
+  background-color: var(--color-sanctum-cream);
+  color: var(--color-sanctum-ink);
+  font-family: var(--font-body);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: var(--color-sanctum-gold);
+  color: var(--color-sanctum-ink);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-sanctum-cream);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-sanctum-gold);
+  border-radius: 5px;
+  border: 2px solid var(--color-sanctum-cream);
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+}
+
+/* Scripture-citation underline. The [sanctumCiteRule] directive sets the
+   --sanctum-cite-rule-scale custom property from 0 → 1 on intersection;
+   this pseudo-element renders the gold hairline beneath the text. */
+.sanctum-cite {
+  --sanctum-cite-rule-scale: 0;
+  position: relative;
+  display: inline-block;
+}
+.sanctum-cite::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10px;
+  height: 1px;
+  background: var(--color-sanctum-gold);
+  transform: scaleX(var(--sanctum-cite-rule-scale));
+  transform-origin: left center;
+  pointer-events: none;
+}
+.sanctum-cite-drawn {
+  --sanctum-cite-rule-scale: 1;
+}
+
+/* Ken-Burns: gentle 12-second loop on hero photography. Subtle enough to feel
+   like breathing rather than a stock-video tic. */
+@keyframes sanctum-ken-burns {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.04) translateY(-1%);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+.ken-burns {
+  animation: sanctum-ken-burns 24s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+  will-change: transform;
+}
+
+/* Hero curtain: clip-path wipe from bottom on first paint. Reads as a
+   curtain rising on a service. The wrapper handles the curtain so the inner
+   image can run the Ken-Burns animation independently. */
+@keyframes sanctum-hero-curtain {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+.hero-curtain {
+  clip-path: inset(0);
+  animation: sanctum-hero-curtain 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .ken-burns,
+  .hero-curtain {
+    animation: none !important;
+    clip-path: none !important;
+  }
+}

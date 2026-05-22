@@ -8,21 +8,16 @@
   "projects": {
     "celestial-sanctum": {
       "projectType": "application",
-      "schematics": {
-        "@schematics/angular:component": {
-          "style": "scss"
-        }
-      },
+      "schematics": {},
       "root": "",
       "sourceRoot": "src",
-      "prefix": "app",
+      "prefix": "sanctum",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
@@ -30,11 +25,14 @@
               }
             ],
             "styles": [
-              "@fontsource/raleway/400.css",
-              "@fontsource/raleway/700.css",
-              "@fontsource/raleway/900.css",
+              "@fontsource/cormorant-garamond/400.css",
+              "@fontsource/cormorant-garamond/500.css",
+              "@fontsource/cormorant-garamond/600.css",
+              "@fontsource/inter/400.css",
+              "@fontsource/inter/500.css",
+              "@fontsource/inter/600.css",
               "src/tailwind.css",
-              "src/styles.scss"
+              "src/styles.css"
             ],
             "server": "src/main.server.ts",
             "outputMode": "server",
