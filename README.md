@@ -108,7 +108,7 @@ The site is broken into nine phases. Phases 0–4 are live in production; Phase 
 - ✅ **Phase 2** — `/visit` + `/about` (long-form with sticky TOC) with verbatim parish content
 - ✅ **Phase 3** — `/watch` (Spotify + YouTube live + 5 real blog posts)
 - ✅ **Phase 4** — `/calendar` (Tockify placeholder) + `/give` (PayPal) + `/contact` (form, awaiting backend)
-- 🟡 **Phase 5** — Sanity migration (homepage + pastor wired; remaining sections pending — [see setup](./SANITY_SETUP.md))
+- ✅ **Phase 5** — Sanity migration (homepage, /about, /visit, /watch blog posts, and site-wide settings all CMS-driven — [see setup](./SANITY_SETUP.md))
 - ⏳ **Phase 6** — Vercel serverless functions for contact / prayer / newsletter
 - ⏳ **Phase 7** — SEO + redirects from legacy `.php` URLs + sitemap + Lighthouse pass
 - ⏳ **Phase 8** — DNS cutover
