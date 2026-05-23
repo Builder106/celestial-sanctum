@@ -1,4 +1,5 @@
 import type { PortableTextBlock } from '@portabletext/types';
+export type { PortableTextBlock };
 
 // One row in the homepage's "Sunday rhythm" section.
 export interface SundayBlock {
@@ -34,4 +35,21 @@ export interface SiteSettings {
   parishAddress: string;
   parishPhone: string;
   parishEmail: string;
+}
+
+export interface AboutItem {
+  term: string;
+  definition: string;
+}
+
+// Shape returned by the GROQ query — paragraphs come back as Portable Text
+// blocks, the about page flattens them to plain strings via blockToPlainText.
+export interface AboutSection {
+  anchorId: string;
+  label: string;
+  eyebrow: string;
+  heading: string;
+  scripture?: string;
+  paragraphs?: PortableTextBlock[];
+  items?: AboutItem[];
 }

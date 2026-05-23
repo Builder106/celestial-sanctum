@@ -12,7 +12,7 @@ import { Observable, from, of } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';
 
 import { isSanityConfigured, sanityConfig } from './sanity.config';
-import type { Homepage, Pastor, SiteSettings } from './sanity.types';
+import type { AboutSection, Homepage, Pastor, SiteSettings } from './sanity.types';
 
 // TransferState lets the server's CMS fetch flow into the prerendered HTML so
 // the browser doesn't re-fetch on hydration. Without this every CMS-driven
@@ -20,6 +20,7 @@ import type { Homepage, Pastor, SiteSettings } from './sanity.types';
 const homepageKey = makeStateKey<Homepage>('sanity:homepage');
 const pastorKey = makeStateKey<Pastor>('sanity:pastor');
 const settingsKey = makeStateKey<SiteSettings>('sanity:siteSettings');
+const aboutKey = makeStateKey<AboutSection[]>('sanity:aboutSections');
 
 @Injectable({ providedIn: 'root' })
 export class SanityService {
@@ -45,6 +46,11 @@ export class SanityService {
     settings: `*[_type == "csSiteSettings"][0]{
       parishName, parishAddress, parishPhone, parishEmail
     }`,
+    aboutSections: `*[_type == "csAboutSection"] | order(order asc){
+      "anchorId": anchorId.current,
+      label, eyebrow, heading, scripture,
+      paragraphs, items[]{ term, definition }
+    }`,
   };
 
   homepage(): Observable<Homepage | null> {
@@ -57,6 +63,10 @@ export class SanityService {
 
   siteSettings(): Observable<SiteSettings | null> {
     return this.fetch(settingsKey, this.queries.settings);
+  }
+
+  aboutSections(): Observable<AboutSection[] | null> {
+    return this.fetch(aboutKey, this.queries.aboutSections);
   }
 
   private fetch<T>(key: ReturnType<typeof makeStateKey<T>>, query: string): Observable<T | null> {

@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import type { PortableTextBlock } from '@portabletext/types';
 import { SanctumButton } from '../../shared/ui/button';
 import { Countdown } from '../../shared/ui/countdown';
 import { Display } from '../../shared/ui/display';
@@ -13,6 +12,7 @@ import { SanctumCascade } from '../../core/motion/cascade.directive';
 import { SanctumDrawIn } from '../../core/motion/draw-in.directive';
 import { SanctumLetterReveal } from '../../core/motion/letter-reveal.directive';
 import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
+import { blockToPlainText } from '../../core/sanity/portable-text';
 import { SanityService } from '../../core/sanity/sanity.service';
 import type { SundayBlock } from '../../core/sanity/sanity.types';
 
@@ -386,13 +386,3 @@ export class Home {
   );
 }
 
-// Flattens one Portable Text block to a plain paragraph string. Good enough
-// for the short pastor's letter; richer rendering (links, marks) would call
-// for @portabletext/to-html-string.
-function blockToPlainText(block: PortableTextBlock | string): string {
-  if (typeof block === 'string') return block;
-  if (!Array.isArray(block.children)) return '';
-  return block.children
-    .map((child) => ('text' in child && typeof child.text === 'string' ? child.text : ''))
-    .join('');
-}
