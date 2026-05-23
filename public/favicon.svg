@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Outer arc — CCC heritage burgundy -->
+  <path d="M 3.5 24 Q 16 3.5 28.5 24" stroke="#730C29" stroke-width="2.5"/>
+  <!-- Middle arc — brass gold -->
+  <path d="M 7 24 Q 16 7.5 25 24" stroke="#B89253" stroke-width="2.5"/>
+  <!-- Inner arc — deep celestial blue -->
+  <path d="M 10.5 24 Q 16 11.5 21.5 24" stroke="#1E3A5F" stroke-width="2.5"/>
+  <!-- Slender cross beneath the rainbow -->
+  <line x1="16" y1="24" x2="16" y2="29" stroke="#1A1612" stroke-width="1.75"/>
+  <line x1="13.5" y1="26.5" x2="18.5" y2="26.5" stroke="#1A1612" stroke-width="1.75"/>
+</svg>
