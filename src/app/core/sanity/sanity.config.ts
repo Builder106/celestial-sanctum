@@ -6,7 +6,7 @@
 // from the repo root. Until then the SanityService falls back to hardcoded
 // content so the build keeps working.
 export const sanityConfig = {
-  projectId: '',
+  projectId: 'jsf7d3td',
   dataset: 'production',
   apiVersion: '2025-01-01',
   useCdn: true,

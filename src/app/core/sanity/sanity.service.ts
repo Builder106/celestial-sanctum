@@ -1,8 +1,15 @@
-import { PLATFORM_ID, Injectable, TransferState, inject, makeStateKey } from '@angular/core';
+import {
+  PLATFORM_ID,
+  Injectable,
+  PendingTasks,
+  TransferState,
+  inject,
+  makeStateKey,
+} from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 import { createClient, type SanityClient } from '@sanity/client';
 import { Observable, from, of } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, finalize, tap } from 'rxjs/operators';
 
 import { isSanityConfigured, sanityConfig } from './sanity.config';
 import type { Homepage, Pastor, SiteSettings } from './sanity.types';
@@ -17,6 +24,7 @@ const settingsKey = makeStateKey<SiteSettings>('sanity:siteSettings');
 @Injectable({ providedIn: 'root' })
 export class SanityService {
   private readonly transferState = inject(TransferState);
+  private readonly pendingTasks = inject(PendingTasks);
   private readonly isServer = isPlatformServer(inject(PLATFORM_ID));
   private readonly client: SanityClient | null = isSanityConfigured()
     ? createClient({ ...sanityConfig })
@@ -58,12 +66,17 @@ export class SanityService {
       return of(cached);
     }
     if (!this.client) return of(null);
+    // pendingTasks.add() blocks Angular SSR's "isStable" gate until we release
+    // it. Without this, the @sanity/client Promise is invisible to SSR and the
+    // page serializes before the fetch resolves. HttpClient calls don't need
+    // this — Angular tracks them automatically.
+    const releaseTask = this.pendingTasks.add();
     return from(this.client.fetch<T | null>(query)).pipe(
       tap((value) => {
-        // Only the server writes — the browser already consumed the cache above.
         if (this.isServer) this.transferState.set(key, value);
       }),
       catchError(() => of(null)),
+      finalize(() => releaseTask()),
     );
   }
 }
