@@ -69,6 +69,11 @@ Open `http://localhost:4200/__styleguide` after `npm start`.
 - **No dependencies on heavy frameworks beyond what's in `package.json`.**
   Motion One is the animation runtime; don't pull in Framer Motion / GSAP /
   Lottie unless there's a concrete need none of the existing tools can meet.
+- **Sanity is the CMS, not Contentful.** Phase 5 started against Contentful and
+  pivoted to Sanity once it became clear the existing Contentful org was
+  locked to an unrelated project. Don't reintroduce `@contentful/*` packages.
+  Schemas live in [`sanity-schemas/`](./sanity-schemas/) and are loaded by the
+  Studio scaffold in `studio/`. See [SANITY_SETUP.md](./SANITY_SETUP.md).
 - **SSR-safety required.** Every directive and component must work under
   Angular SSR. Use `isPlatformBrowser(this.platformId)` guards around any
   `window`, `document`, or `localStorage` access. The build runs
@@ -121,9 +126,9 @@ Don't open PRs for these — they'll be closed:
 - **Tracking/analytics beyond Vercel's first-party tools.** No GA4, no Mixpanel,
   no third-party pixel trackers — the parish hasn't asked for it and we
   shouldn't add it speculatively.
-- **Adding extra CMS adapters.** Contentful is the chosen CMS (see Phase 5 in
-  the implementation plan). PRs adding Sanity/Strapi/Prismic adapters won't
-  be considered until there's a stated reason to migrate.
+- **Adding extra CMS adapters.** Sanity is the chosen CMS. PRs adding
+  Strapi/Prismic/Hygraph adapters won't be considered until there's a stated
+  reason to migrate off Sanity.
 - **PRs from automated tooling that don't include human-readable PR
   descriptions** explaining the change.
 

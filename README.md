@@ -21,7 +21,7 @@ sequenceDiagram
     participant Visitor
     participant Vercel as Vercel Edge
     participant SSR as Angular SSR (Express)
-    participant CMS as Contentful (Phase 5)
+    participant CMS as Sanity (Phase 5)
     participant Embed as Tockify · Spotify · YouTube · PayPal
 
     Visitor->>Vercel: GET /visit
@@ -83,7 +83,7 @@ The architecture chooses **SSR + prerender for SEO** (static pages prerender at 
 | Styling | Tailwind v4 via `@tailwindcss/postcss` + `@theme` tokens |
 | Typography | Cormorant Garamond (display) + Inter (body), self-hosted via `@fontsource` |
 | Animation | Motion One (~5 kB lazy-loaded) + custom directives |
-| CMS | Contentful (deferred to Phase 5) |
+| CMS | Sanity ([see setup](./SANITY_SETUP.md)) |
 | Hosting | Vercel — Production at [celestial-sanctum.vercel.app](https://celestial-sanctum.vercel.app) |
 | Telemetry | `@vercel/analytics` + `@vercel/speed-insights` |
 | CI | GitHub Actions — preview deploys on PRs, production on `main` |
@@ -108,7 +108,7 @@ The site is broken into nine phases. Phases 0–4 are live in production; Phase 
 - ✅ **Phase 2** — `/visit` + `/about` (long-form with sticky TOC) with verbatim parish content
 - ✅ **Phase 3** — `/watch` (Spotify + YouTube live + 5 real blog posts)
 - ✅ **Phase 4** — `/calendar` (Tockify placeholder) + `/give` (PayPal) + `/contact` (form, awaiting backend)
-- ⏳ **Phase 5** — Contentful migration (move hardcoded content to CMS)
+- 🟡 **Phase 5** — Sanity migration (homepage + pastor wired; remaining sections pending — [see setup](./SANITY_SETUP.md))
 - ⏳ **Phase 6** — Vercel serverless functions for contact / prayer / newsletter
 - ⏳ **Phase 7** — SEO + redirects from legacy `.php` URLs + sitemap + Lighthouse pass
 - ⏳ **Phase 8** — DNS cutover

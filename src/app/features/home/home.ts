@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import type { PortableTextBlock } from '@portabletext/types';
 import { SanctumButton } from '../../shared/ui/button';
 import { Countdown } from '../../shared/ui/countdown';
 import { Display } from '../../shared/ui/display';
@@ -11,6 +13,42 @@ import { SanctumCascade } from '../../core/motion/cascade.directive';
 import { SanctumDrawIn } from '../../core/motion/draw-in.directive';
 import { SanctumLetterReveal } from '../../core/motion/letter-reveal.directive';
 import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
+import { SanityService } from '../../core/sanity/sanity.service';
+import type { SundayBlock } from '../../core/sanity/sanity.types';
+
+const FALLBACK = {
+  heroEyebrow: 'Celestial Church of Christ · Bloomington, CA',
+  heroLead: 'You are welcome to',
+  heroHeadline: 'Sanctum parish.',
+  heroSubcopy:
+    'A parish of the Celestial Church of Christ, keeping vigil in Bloomington since 1999. Come as you are.',
+  missionEyebrow: 'Our Mission',
+  missionQuote:
+    'The church exists to win and nurture souls for the kingdom of God — to carry the cross of Jesus, lift it high, and make Him known.',
+  pastorPullQuote: '"This is your house."',
+  pastorParagraphs: [
+    "Whether you've worshipped with us for years or are visiting for the first time, this is your house. Our parish keeps the rhythm — Sunday worship, the Thursday vigil, the choir's hymns in Yoruba and English — and it's here for you to step into at any time.",
+    'If you carry a question, a grief, or a thanksgiving, bring it. The doors are open.',
+  ],
+  pastorSignature: '— The Pastor',
+  sundayRhythm: [
+    {
+      time: '10 AM',
+      heading: 'Arrive',
+      body: "Doors open at half past nine. You don't need to wear a sutana — come as you are, find a seat anywhere, and let the choir set the tone.",
+    },
+    {
+      time: '11 AM',
+      heading: 'Worship',
+      body: 'Songs in Yoruba and English, scripture readings, prayer, the message. Communion the first Sunday of every month.',
+    },
+    {
+      time: '1 PM',
+      heading: 'Fellowship',
+      body: "After service we gather for food and conversation. If you're new, stay for it — it's how the parish makes room for you.",
+    },
+  ] satisfies SundayBlock[],
+} as const;
 
 @Component({
   selector: 'sanctum-home',
@@ -56,11 +94,9 @@ import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
 
       <div class="relative z-10 h-full max-w-6xl mx-auto px-6 md:px-10 flex items-center">
         <div class="max-w-4xl text-white">
-          <sanctum-eyebrow tone="gold">
-            Celestial Church of Christ · Bloomington, CA
-          </sanctum-eyebrow>
+          <sanctum-eyebrow tone="gold">{{ heroEyebrow() }}</sanctum-eyebrow>
           <p class="font-display text-2xl md:text-3xl text-white/90 mt-8 mb-2 italic font-light">
-            You are welcome to
+            {{ heroLead() }}
           </p>
           <h1
             sanctumLetterReveal
@@ -68,11 +104,10 @@ import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
             class="font-display italic font-medium text-sanctum-gold tracking-[-0.02em] leading-[0.9] mb-10"
             style="font-size: clamp(3.75rem, 9vw, 7.5rem);"
           >
-            Sanctum parish.
+            {{ heroHeadline() }}
           </h1>
           <p class="font-body text-lg md:text-xl max-w-lg leading-relaxed text-white/85 mb-10">
-            A parish of the Celestial Church of Christ, keeping vigil in
-            Bloomington since 1999. Come as you are.
+            {{ heroSubcopy() }}
           </p>
           <div class="flex items-center gap-4 flex-wrap mb-6">
             <a sanctumBtn variant="primary" size="lg" href="/visit">
@@ -97,11 +132,10 @@ import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
           <sanctum-mark sanctumDrawIn [size]="64" />
         </div>
         <p class="font-body text-xs uppercase tracking-[0.3em] text-sanctum-blue font-semibold mb-8">
-          Our Mission
+          {{ missionEyebrow() }}
         </p>
         <blockquote class="font-display text-3xl md:text-5xl text-sanctum-ink leading-[1.15] tracking-[-0.01em] mb-12">
-          The church exists to win and nurture souls for the kingdom of God — to
-          carry the cross of Jesus, lift it high, and make Him known.
+          {{ missionQuote() }}
         </blockquote>
       </div>
     </section>
@@ -138,52 +172,51 @@ import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
     <section class="py-24 md:py-32 px-6 bg-sanctum-paper border-y border-sanctum-rule">
       <div sanctumCascade stagger="default" class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-start">
         <div class="md:col-span-4 lg:col-span-3 flex flex-col items-center md:items-start">
-          <!-- Placeholder portrait: cream-on-burgundy silhouette in gold-rule circle -->
-          <div class="relative w-48 h-48 md:w-full md:aspect-square md:h-auto max-w-[14rem] rounded-full overflow-hidden border-2 border-sanctum-gold bg-sanctum-burgundy">
-            <svg
-              viewBox="0 0 200 200"
-              xmlns="http://www.w3.org/2000/svg"
-              class="absolute inset-0 w-full h-full"
-              role="img"
-              aria-label="Placeholder portrait of the pastor"
-            >
-              <!-- Stylized silhouette in sutana -->
-              <circle cx="100" cy="80" r="32" fill="var(--color-sanctum-cream)" />
-              <path
-                d="M 30 200 Q 30 130 60 120 L 80 115 L 100 130 L 120 115 L 140 120 Q 170 130 170 200 Z"
-                fill="var(--color-sanctum-cream)"
-              />
-              <!-- Sutana neckline detail -->
-              <path
-                d="M 80 130 L 100 145 L 120 130 L 120 140 L 100 155 L 80 140 Z"
-                fill="var(--color-sanctum-burgundy)"
-              />
-            </svg>
-          </div>
-          <p class="mt-5 font-body text-xs uppercase tracking-[0.3em] text-sanctum-muted text-center md:text-left">
-            Portrait forthcoming
-          </p>
+          @if (pastorPortrait(); as portrait) {
+            <img
+              [src]="portrait"
+              alt="Portrait of the pastor"
+              class="w-48 h-48 md:w-full md:aspect-square md:h-auto max-w-[14rem] rounded-full object-cover border-2 border-sanctum-gold"
+            />
+          } @else {
+            <!-- Placeholder portrait: cream-on-burgundy silhouette in gold-rule circle -->
+            <div class="relative w-48 h-48 md:w-full md:aspect-square md:h-auto max-w-[14rem] rounded-full overflow-hidden border-2 border-sanctum-gold bg-sanctum-burgundy">
+              <svg
+                viewBox="0 0 200 200"
+                xmlns="http://www.w3.org/2000/svg"
+                class="absolute inset-0 w-full h-full"
+                role="img"
+                aria-label="Placeholder portrait of the pastor"
+              >
+                <circle cx="100" cy="80" r="32" fill="var(--color-sanctum-cream)" />
+                <path
+                  d="M 30 200 Q 30 130 60 120 L 80 115 L 100 130 L 120 115 L 140 120 Q 170 130 170 200 Z"
+                  fill="var(--color-sanctum-cream)"
+                />
+                <path
+                  d="M 80 130 L 100 145 L 120 130 L 120 140 L 100 155 L 80 140 Z"
+                  fill="var(--color-sanctum-burgundy)"
+                />
+              </svg>
+            </div>
+            <p class="mt-5 font-body text-xs uppercase tracking-[0.3em] text-sanctum-muted text-center md:text-left">
+              Portrait forthcoming
+            </p>
+          }
         </div>
 
         <div class="md:col-span-8 lg:col-span-9">
           <sanctum-eyebrow class="mb-5">From the Pastor</sanctum-eyebrow>
           <p class="font-display text-3xl md:text-4xl text-sanctum-ink leading-[1.2] mb-8">
-            "This is your house."
+            {{ pastorPullQuote() }}
           </p>
           <div class="space-y-5 font-body text-base md:text-lg text-sanctum-ink/85 leading-[1.75] max-w-2xl">
-            <p>
-              Whether you've worshipped with us for years or are visiting for
-              the first time, this is your house. Our parish keeps the rhythm —
-              Sunday worship, the Thursday vigil, the choir's hymns in Yoruba
-              and English — and it's here for you to step into at any time.
-            </p>
-            <p>
-              If you carry a question, a grief, or a thanksgiving, bring it.
-              The doors are open.
-            </p>
+            @for (paragraph of pastorParagraphs(); track $index) {
+              <p>{{ paragraph }}</p>
+            }
           </div>
           <p class="mt-10 font-display italic text-xl text-sanctum-burgundy">
-            — The Pastor
+            {{ pastorSignature() }}
           </p>
         </div>
       </div>
@@ -198,7 +231,7 @@ import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
         </sanctum-display>
       </header>
       <div sanctumCascade stagger="default" class="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16">
-        @for (block of sundayShape; track block.time) {
+        @for (block of sundayRhythm(); track block.time) {
           <article>
             <p class="font-display italic text-3xl text-sanctum-gold mb-4">
               {{ block.time }}
@@ -321,21 +354,45 @@ import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
   `,
 })
 export class Home {
-  protected readonly sundayShape = [
-    {
-      time: '10 AM',
-      heading: 'Arrive',
-      body: "Doors open at half past nine. You don't need to wear a sutana — come as you are, find a seat anywhere, and let the choir set the tone.",
-    },
-    {
-      time: '11 AM',
-      heading: 'Worship',
-      body: 'Songs in Yoruba and English, scripture readings, prayer, the message. Communion the first Sunday of every month.',
-    },
-    {
-      time: '1 PM',
-      heading: 'Fellowship',
-      body: "After service we gather for food and conversation. If you're new, stay for it — it's how the parish makes room for you.",
-    },
-  ];
+  private readonly sanity = inject(SanityService);
+
+  private readonly homepageData = toSignal(this.sanity.homepage(), { initialValue: null });
+  private readonly pastorData = toSignal(this.sanity.pastor(), { initialValue: null });
+
+  // Each section reads CMS-first, falling back to the hardcoded constants.
+  // This means /(home) keeps rendering during Phase 5 setup before the
+  // Sanity project is wired up, and again later if the CMS fetch fails.
+  protected readonly heroEyebrow = computed(() => this.homepageData()?.heroEyebrow ?? FALLBACK.heroEyebrow);
+  protected readonly heroLead = computed(() => this.homepageData()?.heroLead ?? FALLBACK.heroLead);
+  protected readonly heroHeadline = computed(() => this.homepageData()?.heroHeadline ?? FALLBACK.heroHeadline);
+  protected readonly heroSubcopy = computed(() => this.homepageData()?.heroSubcopy ?? FALLBACK.heroSubcopy);
+  protected readonly missionEyebrow = computed(() => this.homepageData()?.missionEyebrow ?? FALLBACK.missionEyebrow);
+  protected readonly missionQuote = computed(() => this.homepageData()?.missionQuote ?? FALLBACK.missionQuote);
+  protected readonly sundayRhythm = computed<readonly SundayBlock[]>(
+    () => this.homepageData()?.sundayRhythm ?? FALLBACK.sundayRhythm,
+  );
+
+  protected readonly pastorPortrait = computed(() => this.pastorData()?.portraitUrl ?? null);
+  protected readonly pastorPullQuote = computed(
+    () => this.pastorData()?.letterPullQuote ?? FALLBACK.pastorPullQuote,
+  );
+  protected readonly pastorParagraphs = computed<readonly string[]>(() => {
+    const body = this.pastorData()?.letterBody;
+    if (!body || body.length === 0) return FALLBACK.pastorParagraphs;
+    return body.map(blockToPlainText).filter((p) => p.length > 0);
+  });
+  protected readonly pastorSignature = computed(
+    () => this.pastorData()?.signature ?? FALLBACK.pastorSignature,
+  );
+}
+
+// Flattens one Portable Text block to a plain paragraph string. Good enough
+// for the short pastor's letter; richer rendering (links, marks) would call
+// for @portabletext/to-html-string.
+function blockToPlainText(block: PortableTextBlock | string): string {
+  if (typeof block === 'string') return block;
+  if (!Array.isArray(block.children)) return '';
+  return block.children
+    .map((child) => ('text' in child && typeof child.text === 'string' ? child.text : ''))
+    .join('');
 }
