@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { SeoService } from '../../core/seo/seo.service';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { Icon } from '../../shared/ui/icon';
@@ -196,6 +197,15 @@ interface UseOfFunds {
   `,
 })
 export class Give {
+  private readonly seo = inject(SeoService);
+  constructor() {
+    this.seo.set({
+      title: 'Give',
+      description: 'Support the work of Celestial Sanctum Parish. Secure online giving via PayPal — preset amounts or custom, one-time or recurring.',
+      path: '/give',
+    });
+  }
+
   /** PayPal hosted button ID — extracted from the live celestialsanctumparish.org/give.php */
   private readonly paypalButtonId = 'XWNJRKDNUUTFU';
 

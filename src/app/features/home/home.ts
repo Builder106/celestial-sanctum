@@ -15,6 +15,7 @@ import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
 import { blockToPlainText } from '../../core/sanity/portable-text';
 import { SanityService } from '../../core/sanity/sanity.service';
 import type { SundayBlock } from '../../core/sanity/sanity.types';
+import { SeoService } from '../../core/seo/seo.service';
 
 const FALLBACK_SETTINGS = {
   streetAddress: '11750 Cedar Avenue',
@@ -361,6 +362,15 @@ const FALLBACK = {
 })
 export class Home {
   private readonly sanity = inject(SanityService);
+  private readonly seo = inject(SeoService);
+  constructor() {
+    this.seo.set({
+      title: 'Celestial Sanctum Parish',
+      bareTitle: true,
+      description: 'A parish of the Celestial Church of Christ in Bloomington, California. Sunday worship 10 AM – 2 PM, weekly vigil, podcast, and choir.',
+      path: '/',
+    });
+  }
 
   private readonly homepageData = toSignal(this.sanity.homepage(), { initialValue: null });
   private readonly pastorData = toSignal(this.sanity.pastor(), { initialValue: null });

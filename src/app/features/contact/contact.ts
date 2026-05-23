@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { SeoService } from '../../core/seo/seo.service';
 import { SanctumButton } from '../../shared/ui/button';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
@@ -258,6 +259,15 @@ type Topic =
   `,
 })
 export class Contact {
+  private readonly seo = inject(SeoService);
+  constructor() {
+    this.seo.set({
+      title: 'Contact',
+      description: 'Reach Celestial Sanctum Parish by phone, email, or the contact form. Prayer requests and first-time-visitor questions are especially welcome.',
+      path: '/contact',
+    });
+  }
+
   protected readonly topics: Topic[] = [
     'General',
     'First-Time Visit',

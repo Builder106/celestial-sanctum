@@ -13,6 +13,7 @@ import { SpotifyEmbed } from '../../shared/embeds/spotify-embed';
 import { YouTubeEmbed } from '../../shared/embeds/youtube-embed';
 import { SanityService } from '../../core/sanity/sanity.service';
 import type { BlogPost } from '../../core/sanity/sanity.types';
+import { SeoService } from '../../core/seo/seo.service';
 
 interface SubscribeChannel {
   label: string;
@@ -282,6 +283,14 @@ const FALLBACK_POSTS: BlogPost[] = [
 export class Watch {
   private readonly sanity = inject(SanityService);
   private readonly cmsPosts = toSignal(this.sanity.blogPosts(), { initialValue: null });
+  private readonly seo = inject(SeoService);
+  constructor() {
+    this.seo.set({
+      title: 'Watch & Listen',
+      description: 'Celestial Sanctum Parish online — 24/7 livestream of CCC hymns, the Sanctum Podcast on Spotify, and long-form devotional writing.',
+      path: '/watch',
+    });
+  }
 
   protected readonly posts = computed<readonly BlogPost[]>(() => {
     const fromCms = this.cmsPosts();

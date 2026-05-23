@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { SanctumButton } from '../../shared/ui/button';
+import { SeoService } from '../../core/seo/seo.service';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
@@ -132,6 +133,15 @@ interface RecurringService {
   `,
 })
 export class Calendar {
+  private readonly seo = inject(SeoService);
+  constructor() {
+    this.seo.set({
+      title: 'Calendar',
+      description: 'Weekly rhythm at Celestial Sanctum Parish — Sunday worship, Monday Bible study, Thursday midnight vigil, plus seasonal events.',
+      path: '/calendar',
+    });
+  }
+
   /** Tockify calendar short-name. Null until the parish provides the correct slug. */
   protected readonly tockifySlug: string | null = null;
 

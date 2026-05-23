@@ -5,12 +5,32 @@
   <title>Celestial Sanctum Parish</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A parish under the Celestial Church of Christ, in Bloomington, California. Sunday worship, prophetic ministry, choir, community.">
+  <meta name="description" content="A parish of the Celestial Church of Christ in Bloomington, California. Sunday worship 10 AM – 2 PM, weekly vigil, podcast, and choir.">
   <meta name="theme-color" content="#fbf8f1">
 
   <!-- Favicons — custom SVG mark + iOS home-screen PNG. Per CLAUDE.md baseline. -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+  <!-- Default Open Graph + Twitter Card tags. SeoService overrides title /
+       description / canonical URL per route at runtime; image + site name stay
+       constant across pages. -->
+  <link rel="canonical" href="https://celestial-sanctum.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Celestial Sanctum Parish">
+  <meta property="og:title" content="Celestial Sanctum Parish">
+  <meta property="og:description" content="A parish of the Celestial Church of Christ in Bloomington, California. Sunday worship 10 AM – 2 PM, weekly vigil, podcast, and choir.">
+  <meta property="og:url" content="https://celestial-sanctum.vercel.app/">
+  <meta property="og:image" content="https://celestial-sanctum.vercel.app/og-card.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Celestial Sanctum Parish — Bloomington, California">
+  <meta property="og:locale" content="en_US">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Celestial Sanctum Parish">
+  <meta name="twitter:description" content="A parish of the Celestial Church of Christ in Bloomington, California. Sunday worship 10 AM – 2 PM, weekly vigil, podcast, and choir.">
+  <meta name="twitter:image" content="https://celestial-sanctum.vercel.app/og-card.png">
 </head>
 <body>
   <sanctum-root></sanctum-root>

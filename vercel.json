@@ -1,0 +1,33 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/our-church", "destination": "/about", "permanent": true },
+    { "source": "/our-church/story.php", "destination": "/about#story", "permanent": true },
+    { "source": "/our-church/mission.php", "destination": "/about#mission", "permanent": true },
+    { "source": "/our-church/the-shepherd.php", "destination": "/about#shepherd", "permanent": true },
+    { "source": "/our-church/shepherd.php", "destination": "/about#shepherd", "permanent": true },
+    { "source": "/our-church/doctrine.php", "destination": "/about#doctrine", "permanent": true },
+    { "source": "/our-church/mode-of-worship.php", "destination": "/about#mode-of-worship", "permanent": true },
+    { "source": "/our-church/ministries.php", "destination": "/about#ministries", "permanent": true },
+    { "source": "/our-church/the-choir.php", "destination": "/about#choir", "permanent": true },
+    { "source": "/our-church/choir.php", "destination": "/about#choir", "permanent": true },
+
+    { "source": "/index.php", "destination": "/", "permanent": true },
+    { "source": "/home.php", "destination": "/", "permanent": true },
+
+    { "source": "/podcast.php", "destination": "/watch#podcast", "permanent": true },
+    { "source": "/news.php", "destination": "/watch", "permanent": true },
+    { "source": "/livestream.php", "destination": "/watch#livestream", "permanent": true },
+
+    { "source": "/events.php", "destination": "/calendar", "permanent": true },
+    { "source": "/calendar.php", "destination": "/calendar", "permanent": true },
+
+    { "source": "/give.php", "destination": "/give", "permanent": true },
+    { "source": "/donate.php", "destination": "/give", "permanent": true },
+    { "source": "/donation.php", "destination": "/give", "permanent": true },
+
+    { "source": "/contact.php", "destination": "/contact", "permanent": true },
+    { "source": "/contact-us.php", "destination": "/contact", "permanent": true },
+    { "source": "/visit.php", "destination": "/visit", "permanent": true }
+  ]
+}

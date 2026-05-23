@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /__styleguide
+
+Sitemap: https://celestial-sanctum.vercel.app/sitemap.xml

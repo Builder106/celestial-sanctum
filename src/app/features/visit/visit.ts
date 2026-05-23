@@ -12,6 +12,7 @@ import { SanctumDrawIn } from '../../core/motion/draw-in.directive';
 import { SanctumLetterReveal } from '../../core/motion/letter-reveal.directive';
 import { SanityService } from '../../core/sanity/sanity.service';
 import type { ServiceElement, ServiceSlot, VisitFaq } from '../../core/sanity/sanity.types';
+import { SeoService } from '../../core/seo/seo.service';
 
 const FALLBACK = {
   heroEyebrow: 'Plan your visit',
@@ -289,6 +290,14 @@ export class Visit {
   private readonly sanity = inject(SanityService);
   private readonly visitData = toSignal(this.sanity.visitPage(), { initialValue: null });
   private readonly settingsData = toSignal(this.sanity.siteSettings(), { initialValue: null });
+  private readonly seo = inject(SeoService);
+  constructor() {
+    this.seo.set({
+      title: 'Plan Your Visit',
+      description: 'First-time visitor to Celestial Sanctum Parish? Sunday worship 10 AM, weekly schedule, what to expect (sutanas, incense, candles), parking, and FAQs.',
+      path: '/visit',
+    });
+  }
 
   protected readonly heroEyebrow = computed(() => this.visitData()?.heroEyebrow ?? FALLBACK.heroEyebrow);
   protected readonly heroHeadline = computed(() => this.visitData()?.heroHeadline ?? FALLBACK.heroHeadline);

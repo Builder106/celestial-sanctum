@@ -11,6 +11,7 @@ import { SanctumDrawIn } from '../../core/motion/draw-in.directive';
 import { SanctumCiteRule } from '../../core/motion/cite-rule.directive';
 import { blockToPlainText } from '../../core/sanity/portable-text';
 import { SanityService } from '../../core/sanity/sanity.service';
+import { SeoService } from '../../core/seo/seo.service';
 
 // Local shape — flattened paragraphs (string[]) so the template stays simple.
 // Sanity returns paragraphs as PortableText blocks; we flatten in the computed.
@@ -213,6 +214,14 @@ const FALLBACK: AboutSection[] = [
 export class About {
   private readonly sanity = inject(SanityService);
   private readonly cmsSections = toSignal(this.sanity.aboutSections(), { initialValue: null });
+  private readonly seo = inject(SeoService);
+  constructor() {
+    this.seo.set({
+      title: 'About',
+      description: 'The story, mission, doctrine, mode of worship, and ministries of Celestial Sanctum Parish — a heavenly sanctuary in Bloomington, California since 1999.',
+      path: '/about',
+    });
+  }
 
   protected readonly sections = computed<readonly AboutSection[]>(() => {
     const fromCms = this.cmsSections();
