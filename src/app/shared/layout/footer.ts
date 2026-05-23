@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../ui/icon';
 import { SanctumButton } from '../ui/button';
@@ -13,11 +14,13 @@ import {
   SOCIALS,
 } from './nav-data';
 
+type NewsletterState = 'idle' | 'sending' | 'sent' | 'error';
+
 @Component({
   selector: 'sanctum-footer',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Icon, SanctumButton, Hairline, SanctumMark],
+  imports: [FormsModule, RouterLink, Icon, SanctumButton, Hairline, SanctumMark],
   template: `
     <footer class="relative border-t border-sanctum-rule bg-sanctum-cream pt-24 pb-12">
       <div class="max-w-6xl mx-auto px-6 md:px-10 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
@@ -88,19 +91,48 @@ import {
             Subscribe to Sanctum News for upcoming events, devotionals, and
             choir releases.
           </p>
-          <form class="flex flex-col gap-3 mb-8" (submit)="$event.preventDefault()">
-            <label class="sr-only" for="newsletter-email">Email address</label>
-            <input
-              id="newsletter-email"
-              type="email"
-              required
-              placeholder="you@example.com"
-              class="w-full px-4 py-3 bg-sanctum-paper border border-sanctum-rule rounded-sm font-body text-sm text-sanctum-ink placeholder:text-sanctum-muted/60 focus:outline-none focus:border-sanctum-gold transition-colors"
-            />
-            <button sanctumBtn type="submit" size="sm" variant="primary">
-              Subscribe
-            </button>
-          </form>
+          @if (newsletterState() === 'sent') {
+            <p class="font-body text-sm text-sanctum-ink leading-relaxed mb-8 p-4 border border-sanctum-gold rounded-sm">
+              You're on the list. Watch your inbox.
+            </p>
+          } @else {
+            <form class="flex flex-col gap-3 mb-8" (submit)="onNewsletterSubmit($event)">
+              <label class="sr-only" for="newsletter-email">Email address</label>
+              <input
+                id="newsletter-email"
+                name="email"
+                type="email"
+                required
+                placeholder="you@example.com"
+                [(ngModel)]="newsletterEmail"
+                class="w-full px-4 py-3 bg-sanctum-paper border border-sanctum-rule rounded-sm font-body text-sm text-sanctum-ink placeholder:text-sanctum-muted/60 focus:outline-none focus:border-sanctum-gold transition-colors"
+              />
+              <!-- Honeypot, hidden from real users -->
+              <input
+                class="hidden"
+                tabindex="-1"
+                autocomplete="off"
+                aria-hidden="true"
+                name="website"
+                [(ngModel)]="newsletterHoneypot"
+              />
+              <button
+                sanctumBtn
+                type="submit"
+                size="sm"
+                variant="primary"
+                [disabled]="newsletterState() === 'sending'"
+              >
+                @if (newsletterState() === 'sending') { Subscribing… }
+                @else { Subscribe }
+              </button>
+              @if (newsletterState() === 'error') {
+                <p class="font-body text-xs text-sanctum-burgundy">
+                  Something went wrong. Try again in a moment.
+                </p>
+              }
+            </form>
+          }
 
           <p class="font-body text-xs uppercase tracking-[0.3em] text-sanctum-blue font-semibold mb-4">
             Follow
@@ -152,4 +184,28 @@ export class Footer {
   protected readonly phone = computed(() => this.settingsData()?.parishPhone ?? FOOTER_CONTACT.phone);
   protected readonly phoneHref = computed(() => this.settingsData()?.parishPhoneHref ?? FOOTER_CONTACT.phoneHref);
   protected readonly email = computed(() => this.settingsData()?.parishEmail ?? FOOTER_CONTACT.email);
+
+  protected newsletterEmail = '';
+  protected newsletterHoneypot = '';
+  protected readonly newsletterState = signal<NewsletterState>('idle');
+
+  protected async onNewsletterSubmit(event: SubmitEvent): Promise<void> {
+    event.preventDefault();
+    if (this.newsletterHoneypot) return;
+    const email = this.newsletterEmail.trim();
+    if (!email) return;
+
+    this.newsletterState.set('sending');
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email, honeypot: this.newsletterHoneypot }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      this.newsletterState.set('sent');
+    } catch {
+      this.newsletterState.set('error');
+    }
+  }
 }

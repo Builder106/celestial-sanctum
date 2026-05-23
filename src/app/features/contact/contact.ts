@@ -275,7 +275,7 @@ export class Contact {
   protected readonly state = signal<FormState>('idle');
   protected readonly submittedEmail = signal('');
 
-  protected onSubmit(event: SubmitEvent): void {
+  protected async onSubmit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
     if (this.honeypot) return; // silent drop for bots
 
@@ -285,12 +285,24 @@ export class Contact {
     }
 
     this.state.set('sending');
-    // Phase 6 will wire this to /api/contact. For now, simulate a successful
-    // send and surface the confirmation so the UI flow is testable.
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: this.name,
+          email: this.email,
+          topic: this.topic,
+          message: this.message,
+          honeypot: this.honeypot,
+        }),
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       this.submittedEmail.set(this.email);
       this.state.set('sent');
-    }, 600);
+    } catch {
+      this.state.set('error');
+    }
   }
 
   protected reset(): void {
