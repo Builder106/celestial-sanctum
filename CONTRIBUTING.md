@@ -112,9 +112,10 @@ fix: hero
    another; don't bundle them.
 3. Run `npm run build` locally before pushing — the prerender step catches a
    lot of SSR issues that `npm start` doesn't.
-4. CI (`.github/workflows/deploy.yml`) will run tests + build a Vercel preview.
-   The preview URL appears in the PR thread once the workflow completes.
-5. Merge to `main` deploys to production automatically.
+4. CI (`.github/workflows/ci.yml`) builds and tests on every push and PR.
+   Preview URLs come from Vercel's git integration and appear in the PR
+   thread once the Vercel build completes (separate from GitHub Actions).
+5. Merge to `main` deploys to production via Vercel's git integration.
 
 ## Out of scope
 

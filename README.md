@@ -4,7 +4,7 @@
   <img alt="Celestial Sanctum — Angular 21 SSR rebuild of celestialsanctumparish.org" src="assets/banner-light.png">
 </picture>
 
-[![CI](https://github.com/Builder106/celestial-sanctum/actions/workflows/deploy.yml/badge.svg)](https://github.com/Builder106/celestial-sanctum/actions/workflows/deploy.yml)
+[![CI](https://github.com/Builder106/celestial-sanctum/actions/workflows/ci.yml/badge.svg)](https://github.com/Builder106/celestial-sanctum/actions/workflows/ci.yml)
 [![Angular](https://img.shields.io/badge/Angular-21-DD0031.svg)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6.svg)](https://www.typescriptlang.org/)
 [![Tailwind](https://img.shields.io/badge/Tailwind-v4-38BDF8.svg)](https://tailwindcss.com)
