@@ -1,0 +1,29 @@
+# Celestial Sanctum Parish
+
+> A parish of the Celestial Church of Christ in Bloomington, California. Sunday worship 10 AM – 2 PM, weekly vigil, podcast, and choir. Founded 1999.
+
+## Visit
+
+- [Plan Your Visit](https://celestial-sanctum.vercel.app/visit): What first-time visitors should expect at a Celestial Church of Christ service — attire (white sutanas, head coverings), service elements (incense, water, kneeling), and the full weekly schedule.
+- [Calendar](https://celestial-sanctum.vercel.app/calendar): Weekly recurring services and seasonal events.
+- [Contact](https://celestial-sanctum.vercel.app/contact): Phone, email, address, and a contact form with topic routing (general / first-time visit / prayer request / volunteer).
+
+## About the Parish
+
+- [About](https://celestial-sanctum.vercel.app/about): Long-form parish identity covering Story, Mission, Shepherd, Doctrine, Mode of Worship, Ministries, and the Sanctum Choir.
+
+## Media
+
+- [Watch & Listen](https://celestial-sanctum.vercel.app/watch): The Sanctum Podcast on Spotify, 24/7 YouTube livestream of CCC original hymns, and long-form devotional blog posts.
+
+## Give
+
+- [Give](https://celestial-sanctum.vercel.app/give): Secure online giving via PayPal.
+
+## Site Information
+
+- Location: 11750 Cedar Avenue, Bloomington, CA 92316
+- Sunday worship: 10 AM – 2 PM
+- Phone: 909.996.2397
+- Email: celestialsanctumparish@gmail.com
+- Sitemap: [sitemap.xml](https://celestial-sanctum.vercel.app/sitemap.xml)
