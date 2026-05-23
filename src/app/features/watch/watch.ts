@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { BlogCard } from '../../shared/ui/blog-card';
 import { SanctumButton } from '../../shared/ui/button';
 import { SanctumReveal } from '../../core/motion/reveal.directive';
@@ -10,15 +11,8 @@ import { Icon } from '../../shared/ui/icon';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
 import { SpotifyEmbed } from '../../shared/embeds/spotify-embed';
 import { YouTubeEmbed } from '../../shared/embeds/youtube-embed';
-
-interface BlogPost {
-  title: string;
-  href: string;
-  date: string;
-  author: string;
-  excerpt: string;
-  imageUrl: string;
-}
+import { SanityService } from '../../core/sanity/sanity.service';
+import type { BlogPost } from '../../core/sanity/sanity.types';
 
 interface SubscribeChannel {
   label: string;
@@ -26,6 +20,49 @@ interface SubscribeChannel {
   href: string;
   icon: 'spotify' | 'youtube' | 'mail' | 'pen';
 }
+
+const FALLBACK_POSTS: BlogPost[] = [
+  {
+    title: 'Going Under and Coming Up New: The Beautiful Meaning of Baptism',
+    href: 'https://www.celestialsanctumparish.org/blog/2026/05/22/going-under-and-coming-up-new-the-beautiful-meaning-of-baptism/',
+    displayDate: 'May 22, 2026',
+    author: 'Sanctum Parish',
+    excerpt: "Baptism is so much more than a church tradition — it's a profound, personal declaration of faith that marks the beginning of your new life in Christ.",
+    imageUrl: 'https://i0.wp.com/celestialsanctumparish.org/blog/wp-content/uploads/2026/05/featured-1779465650399.jpg?resize=780%2C437&ssl=1',
+  },
+  {
+    title: 'Bending Low to Rise High: Why Humility is the Heart of the Christian Life',
+    href: 'https://www.celestialsanctumparish.org/blog/2026/05/20/bending-low-to-rise-high-why-humility-is-the-heart-of-the-christian-life/',
+    displayDate: 'May 20, 2026',
+    author: 'Sanctum Parish',
+    excerpt: 'In a world that celebrates self-promotion and personal glory, God invites us into something far more beautiful — the quiet, powerful grace of humility.',
+    imageUrl: 'https://i0.wp.com/celestialsanctumparish.org/blog/wp-content/uploads/2026/05/featured-1779292848042.jpg?resize=780%2C437&ssl=1',
+  },
+  {
+    title: 'When Fear Knocks on Your Door: How Faith Answers',
+    href: 'https://www.celestialsanctumparish.org/blog/2026/05/18/when-fear-knocks-on-your-door-how-faith-answers/',
+    displayDate: 'May 18, 2026',
+    author: 'Sanctum Parish',
+    excerpt: 'Fear has a way of showing up uninvited — but so does God. Discover how faith in His Word can silence the loudest fears and anchor your heart in His perfect peace.',
+    imageUrl: 'https://i0.wp.com/celestialsanctumparish.org/blog/wp-content/uploads/2026/05/featured-1779120053031.jpg?resize=780%2C437&ssl=1',
+  },
+  {
+    title: "Welcome Home: What the Prodigal Son Teaches Us About God's Relentless Love",
+    href: 'https://www.celestialsanctumparish.org/blog/2026/05/15/welcome-home-what-the-prodigal-son-teaches-us-about-gods-relentless-love/',
+    displayDate: 'May 15, 2026',
+    author: 'Sanctum Parish',
+    excerpt: "The parable of the prodigal son isn't just a story about a wayward child — it's a portrait of a Father who never stops watching the road, waiting for you to come home.",
+    imageUrl: 'https://i0.wp.com/celestialsanctumparish.org/blog/wp-content/uploads/2026/05/featured-1778860847714.jpg?resize=780%2C437&ssl=1',
+  },
+  {
+    title: 'Blessed Are You: How the Beatitudes Speak Directly to Your Life Today',
+    href: 'https://www.celestialsanctumparish.org/blog/2026/05/13/blessed-are-you-how-the-beatitudes-speak-directly-to-your-life-today/',
+    displayDate: 'May 13, 2026',
+    author: 'Sanctum Parish',
+    excerpt: "Jesus' Beatitudes aren't just ancient poetry — they're a living blueprint for the kind of heart God is shaping in each of us.",
+    imageUrl: 'https://i0.wp.com/celestialsanctumparish.org/blog/wp-content/uploads/2026/05/featured-1778688041791.jpg?resize=780%2C437&ssl=1',
+  },
+];
 
 @Component({
   selector: 'sanctum-watch',
@@ -150,7 +187,7 @@ interface SubscribeChannel {
       </header>
 
       <!-- Featured (first) post — full-width -->
-      @if (posts[0]; as featured) {
+      @if (featuredPost(); as featured) {
         <sanctum-blog-card
           sanctumReveal
           duration="long"
@@ -158,7 +195,7 @@ interface SubscribeChannel {
           [featured]="true"
           [title]="featured.title"
           [href]="featured.href"
-          [date]="featured.date"
+          [date]="featured.displayDate"
           [author]="featured.author"
           [excerpt]="featured.excerpt"
           [imageUrl]="featured.imageUrl"
@@ -167,11 +204,11 @@ interface SubscribeChannel {
 
       <!-- Remaining posts in 2-col grid -->
       <div sanctumCascade stagger="default" class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 lg:gap-16">
-        @for (post of posts.slice(1); track post.href) {
+        @for (post of remainingPosts(); track post.href) {
           <sanctum-blog-card
             [title]="post.title"
             [href]="post.href"
-            [date]="post.date"
+            [date]="post.displayDate"
             [author]="post.author"
             [excerpt]="post.excerpt"
             [imageUrl]="post.imageUrl"
@@ -243,58 +280,16 @@ interface SubscribeChannel {
   `,
 })
 export class Watch {
-  protected readonly posts: BlogPost[] = [
-    {
-      title: 'Going Under and Coming Up New: The Beautiful Meaning of Baptism',
-      href: 'https://www.celestialsanctumparish.org/blog/2026/05/22/going-under-and-coming-up-new-the-beautiful-meaning-of-baptism/',
-      date: 'May 22, 2026',
-      author: 'Sanctum Parish',
-      excerpt:
-        "Baptism is so much more than a church tradition — it's a profound, personal declaration of faith that marks the beginning of your new life in Christ.",
-      imageUrl:
-        'https://i0.wp.com/celestialsanctumparish.org/blog/wp-content/uploads/2026/05/featured-1779465650399.jpg?resize=780%2C437&ssl=1',
-    },
-    {
-      title: 'Bending Low to Rise High: Why Humility is the Heart of the Christian Life',
-      href: 'https://www.celestialsanctumparish.org/blog/2026/05/20/bending-low-to-rise-high-why-humility-is-the-heart-of-the-christian-life/',
-      date: 'May 20, 2026',
-      author: 'Sanctum Parish',
-      excerpt:
-        'In a world that celebrates self-promotion and personal glory, God invites us into something far more beautiful — the quiet, powerful grace of humility.',
-      imageUrl:
-        'https://i0.wp.com/celestialsanctumparish.org/blog/wp-content/uploads/2026/05/featured-1779292848042.jpg?resize=780%2C437&ssl=1',
-    },
-    {
-      title: 'When Fear Knocks on Your Door: How Faith Answers',
-      href: 'https://www.celestialsanctumparish.org/blog/2026/05/18/when-fear-knocks-on-your-door-how-faith-answers/',
-      date: 'May 18, 2026',
-      author: 'Sanctum Parish',
-      excerpt:
-        'Fear has a way of showing up uninvited — but so does God. Discover how faith in His Word can silence the loudest fears and anchor your heart in His perfect peace.',
-      imageUrl:
-        'https://i0.wp.com/celestialsanctumparish.org/blog/wp-content/uploads/2026/05/featured-1779120053031.jpg?resize=780%2C437&ssl=1',
-    },
-    {
-      title: "Welcome Home: What the Prodigal Son Teaches Us About God's Relentless Love",
-      href: 'https://www.celestialsanctumparish.org/blog/2026/05/15/welcome-home-what-the-prodigal-son-teaches-us-about-gods-relentless-love/',
-      date: 'May 15, 2026',
-      author: 'Sanctum Parish',
-      excerpt:
-        "The parable of the prodigal son isn't just a story about a wayward child — it's a portrait of a Father who never stops watching the road, waiting for you to come home.",
-      imageUrl:
-        'https://i0.wp.com/celestialsanctumparish.org/blog/wp-content/uploads/2026/05/featured-1778860847714.jpg?resize=780%2C437&ssl=1',
-    },
-    {
-      title: 'Blessed Are You: How the Beatitudes Speak Directly to Your Life Today',
-      href: 'https://www.celestialsanctumparish.org/blog/2026/05/13/blessed-are-you-how-the-beatitudes-speak-directly-to-your-life-today/',
-      date: 'May 13, 2026',
-      author: 'Sanctum Parish',
-      excerpt:
-        "Jesus' Beatitudes aren't just ancient poetry — they're a living blueprint for the kind of heart God is shaping in each of us.",
-      imageUrl:
-        'https://i0.wp.com/celestialsanctumparish.org/blog/wp-content/uploads/2026/05/featured-1778688041791.jpg?resize=780%2C437&ssl=1',
-    },
-  ];
+  private readonly sanity = inject(SanityService);
+  private readonly cmsPosts = toSignal(this.sanity.blogPosts(), { initialValue: null });
+
+  protected readonly posts = computed<readonly BlogPost[]>(() => {
+    const fromCms = this.cmsPosts();
+    if (!fromCms || fromCms.length === 0) return FALLBACK_POSTS;
+    return fromCms;
+  });
+  protected readonly featuredPost = computed(() => this.posts()[0]);
+  protected readonly remainingPosts = computed(() => this.posts().slice(1));
 
   protected readonly subscribe: SubscribeChannel[] = [
     {

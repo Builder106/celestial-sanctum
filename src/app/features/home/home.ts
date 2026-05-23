@@ -16,6 +16,12 @@ import { blockToPlainText } from '../../core/sanity/portable-text';
 import { SanityService } from '../../core/sanity/sanity.service';
 import type { SundayBlock } from '../../core/sanity/sanity.types';
 
+const FALLBACK_SETTINGS = {
+  streetAddress: '11750 Cedar Avenue',
+  cityRegion: 'Bloomington, CA 92316',
+  mapsQuery: '11750+Cedar+Avenue+Bloomington+CA+92316',
+} as const;
+
 const FALLBACK = {
   heroEyebrow: 'Celestial Church of Christ · Bloomington, CA',
   heroLead: 'You are welcome to',
@@ -328,7 +334,7 @@ const FALLBACK = {
           Find us in Bloomington.
         </h2>
         <p class="font-body text-lg md:text-xl text-sanctum-cream/85 leading-relaxed max-w-2xl mx-auto mb-3">
-          11750 Cedar Avenue · Bloomington, CA 92316
+          {{ parishAddressInline() }}
         </p>
         <p class="font-body text-sm text-sanctum-cream/65 mb-12">
           Twenty-five minutes east of downtown San Bernardino, twelve from Riverside.
@@ -339,7 +345,7 @@ const FALLBACK = {
             variant="primary"
             tone="light"
             size="lg"
-            href="https://maps.google.com/?q=11750+Cedar+Avenue+Bloomington+CA+92316"
+            [href]="directionsUrl()"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -358,6 +364,7 @@ export class Home {
 
   private readonly homepageData = toSignal(this.sanity.homepage(), { initialValue: null });
   private readonly pastorData = toSignal(this.sanity.pastor(), { initialValue: null });
+  private readonly settingsData = toSignal(this.sanity.siteSettings(), { initialValue: null });
 
   // Each section reads CMS-first, falling back to the hardcoded constants.
   // This means /(home) keeps rendering during Phase 5 setup before the
@@ -384,5 +391,14 @@ export class Home {
   protected readonly pastorSignature = computed(
     () => this.pastorData()?.signature ?? FALLBACK.pastorSignature,
   );
+
+  protected readonly parishAddressInline = computed(() => {
+    const s = this.settingsData();
+    return `${s?.streetAddress ?? FALLBACK_SETTINGS.streetAddress} · ${s?.cityRegion ?? FALLBACK_SETTINGS.cityRegion}`;
+  });
+  protected readonly directionsUrl = computed(() => {
+    const q = this.settingsData()?.mapsQuery ?? FALLBACK_SETTINGS.mapsQuery;
+    return `https://maps.google.com/?q=${q}`;
+  });
 }
 

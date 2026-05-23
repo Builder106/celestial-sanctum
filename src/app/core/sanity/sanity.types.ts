@@ -32,9 +32,12 @@ export interface Pastor {
 
 export interface SiteSettings {
   parishName: string;
-  parishAddress: string;
+  streetAddress: string;
+  cityRegion: string;
   parishPhone: string;
+  parishPhoneHref: string;
   parishEmail: string;
+  mapsQuery: string;
 }
 
 export interface AboutItem {
@@ -52,4 +55,48 @@ export interface AboutSection {
   scripture?: string;
   paragraphs?: PortableTextBlock[];
   items?: AboutItem[];
+}
+
+export interface ServiceSlot {
+  day: string;
+  detail: string;
+  highlight?: boolean;
+}
+
+export interface ServiceElement {
+  term: string;
+  definition: string;
+}
+
+export interface VisitFaq {
+  q: string;
+  a: string;
+}
+
+export interface VisitPage {
+  heroEyebrow: string;
+  heroHeadline: string;
+  heroHeadlineItalic?: string;
+  heroSubcopy: string;
+  whenEyebrow: string;
+  whenHeading: string;
+  whenSubcopy: string;
+  schedule: ServiceSlot[];
+  serviceEyebrow: string;
+  serviceHeading: string;
+  serviceHeadingItalic?: string;
+  serviceIntro: string;
+  serviceElements: ServiceElement[];
+  faqEyebrow: string;
+  faqHeading: string;
+  faqs: VisitFaq[];
+}
+
+export interface BlogPost {
+  title: string;
+  href: string;
+  displayDate: string;
+  author: string;
+  excerpt: string;
+  imageUrl: string;
 }

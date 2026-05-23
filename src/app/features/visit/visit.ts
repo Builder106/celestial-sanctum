@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { SanctumButton } from '../../shared/ui/button';
 import { Countdown } from '../../shared/ui/countdown';
 import { Display } from '../../shared/ui/display';
@@ -9,17 +10,61 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
 import { SanctumCascade } from '../../core/motion/cascade.directive';
 import { SanctumDrawIn } from '../../core/motion/draw-in.directive';
 import { SanctumLetterReveal } from '../../core/motion/letter-reveal.directive';
+import { SanityService } from '../../core/sanity/sanity.service';
+import type { ServiceElement, ServiceSlot, VisitFaq } from '../../core/sanity/sanity.types';
 
-interface ServiceSlot {
-  day: string;
-  detail: string;
-  highlight?: boolean;
-}
+const FALLBACK = {
+  heroEyebrow: 'Plan your visit',
+  heroHeadline: 'Come as you are.',
+  heroHeadlineItalic: 'Wear what you brought.',
+  heroSubcopy:
+    "First time at a Celestial Church of Christ parish? Here's what to expect. Bring your questions; the doors are open.",
+  whenEyebrow: 'When',
+  whenHeading: 'Sundays at 10 AM.',
+  whenSubcopy:
+    'Main worship runs from 10 in the morning to 2 in the afternoon. The parish keeps a full week of prayer and study around that anchor.',
+  schedule: [
+    { day: 'Sunday', detail: 'Worship · 10 AM – 2 PM', highlight: true },
+    { day: 'Monday', detail: 'Bible Study · 8 PM' },
+    { day: 'Tuesday', detail: 'Prophesying Into Your Situation · 8 PM' },
+    { day: 'Wednesday', detail: 'Seeker Service · 9 AM' },
+    { day: 'Thursday', detail: 'Midnight Vigil · 12 AM', highlight: true },
+    { day: 'Friday', detail: 'Power Day Service · 9:30 PM' },
+    { day: 'Saturday', detail: "Women's Fellowship · 5 PM" },
+  ] satisfies ServiceSlot[],
+  serviceEyebrow: 'What happens during service',
+  serviceHeading: 'Divinely revealed,',
+  serviceHeadingItalic: 'biblically grounded.',
+  serviceIntro:
+    "A Celestial Church of Christ service is unconventional in appearance and ancient in pattern. If you've never been to one, here's what you'll see and why we do it that way.",
+  serviceElements: [
+    { term: "You'll be asked to remove your shoes.", definition: 'This follows the biblical pattern (Exodus 3:5) of approaching holy ground. Sandals or socks are fine. There is a rack at the entrance.' },
+    { term: 'White sutanas — encouraged but optional.', definition: "Members wear white robes called sutanas; visitors are not required to. The garments symbolize heavenly citizenship and the biblical attire of saints. If you come without one, you'll be just as welcome." },
+    { term: 'Women wear head coverings.', definition: "In keeping with 1 Corinthians 11, women cover their heads during service. If you don't have one, there are coverings at the door." },
+    { term: 'Seven candlesticks burn at the altar.', definition: "They represent the seven spirits of God described in Revelation. The altar itself represents God's throne." },
+    { term: 'Incense and water are part of prayer.', definition: "Incense is burned during prayer for sanctification — a representation of prayer rising and of God's presence. Water sprinkling serves as purification, paralleling Old Testament practice and New Testament redemption through Christ." },
+    { term: 'We kneel, bow, and lift our hands.', definition: "The parish emphasizes humble worship through posture — kneeling at moments of prayer, bowing at the altar, lifting hands during songs and intercession. Follow as you're able." },
+  ] satisfies ServiceElement[],
+  faqEyebrow: 'First time?',
+  faqHeading: 'Questions you might have.',
+  faqs: [
+    { q: 'What should I wear?', a: "Come as you are. Smart-casual is the norm for visitors — clean shirt, trousers or modest dress. You'll remove shoes at the entrance, and women cover their heads. The white sutana is for members and is not required of visitors." },
+    { q: 'Can I bring my children?', a: "Yes. Children worship alongside the congregation; the parish runs a Youth Ministry that engages younger members through education, relationships, and Bible teaching. Stay with your kids during service — they're welcome at the altar." },
+    { q: "I've never been to a Celestial Church before. Will I feel out of place?", a: "You'll be visibly new — that's fine. Several members will greet you. The Wednesday morning Seeker Service at 9 AM is specifically shaped around people exploring the parish for the first time; consider starting there if a full Sunday feels like a lot." },
+    { q: 'What about parking?', a: 'There is on-site parking at 11750 Cedar Avenue with street parking nearby for Sunday overflow. Arrive 10–15 minutes early on Sundays to find a spot before the 10 AM start.' },
+    { q: 'How long is service?', a: "Sunday worship runs from 10 AM to about 2 PM, with fellowship and food after. You're welcome to stay for the whole arc or leave when you need to." },
+    { q: 'Is the service in English?', a: "Yes. Songs are sung in both Yoruba (the Celestial Church's Nigerian roots) and English; readings, prayers, and the message are in English. The choir often translates as they go." },
+  ] satisfies VisitFaq[],
+} as const;
 
-interface FaqItem {
-  q: string;
-  a: string;
-}
+const FALLBACK_SETTINGS = {
+  streetAddress: '11750 Cedar Avenue',
+  cityRegion: 'Bloomington, CA 92316',
+  parishPhone: '909.996.2397',
+  parishPhoneHref: '909-996-2397',
+  parishEmail: 'celestialsanctumparish@gmail.com',
+  mapsQuery: '11750+Cedar+Avenue+Bloomington+CA+92316',
+} as const;
 
 @Component({
   selector: 'sanctum-visit',
@@ -29,16 +74,17 @@ interface FaqItem {
   template: `
     <!-- Page hero -->
     <section sanctumCascade stagger="spaced" class="pt-24 md:pt-32 pb-16 px-6 max-w-6xl mx-auto">
-      <sanctum-eyebrow class="mb-6">Plan your visit</sanctum-eyebrow>
+      <sanctum-eyebrow class="mb-6">{{ heroEyebrow() }}</sanctum-eyebrow>
       <sanctum-display size="xl" class="mb-8 max-w-4xl">
         <h1>
-          Come as you are.
-          <span class="italic text-sanctum-burgundy block">Wear what you brought.</span>
+          {{ heroHeadline() }}
+          @if (heroHeadlineItalic()) {
+            <span class="italic text-sanctum-burgundy block">{{ heroHeadlineItalic() }}</span>
+          }
         </h1>
       </sanctum-display>
       <p class="font-body text-xl text-sanctum-muted leading-relaxed max-w-2xl">
-        First time at a Celestial Church of Christ parish? Here's what to expect.
-        Bring your questions; the doors are open.
+        {{ heroSubcopy() }}
       </p>
     </section>
 
@@ -46,13 +92,12 @@ interface FaqItem {
     <section id="when" class="py-20 md:py-24 px-6 max-w-6xl mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
         <div sanctumReveal class="lg:col-span-5">
-          <sanctum-eyebrow class="mb-5">When</sanctum-eyebrow>
+          <sanctum-eyebrow class="mb-5">{{ whenEyebrow() }}</sanctum-eyebrow>
           <sanctum-display size="lg" class="mb-6">
-            <h2>Sundays at 10 AM.</h2>
+            <h2>{{ whenHeading() }}</h2>
           </sanctum-display>
           <p class="font-body text-base md:text-lg text-sanctum-muted leading-relaxed mb-6 max-w-md">
-            Main worship runs from 10 in the morning to 2 in the afternoon. The
-            parish keeps a full week of prayer and study around that anchor.
+            {{ whenSubcopy() }}
           </p>
           <div class="inline-flex items-baseline gap-3">
             <span class="font-body text-xs uppercase tracking-[0.3em] text-sanctum-gold font-semibold">
@@ -63,7 +108,7 @@ interface FaqItem {
         </div>
         <div class="lg:col-span-7">
           <ul sanctumCascade stagger="tight" class="space-y-1 list-none">
-            @for (slot of schedule; track slot.day) {
+            @for (slot of schedule(); track slot.day) {
               <li
                 class="flex justify-between items-baseline gap-4 py-4 border-b border-sanctum-rule"
                 [class.border-l-2]="slot.highlight"
@@ -102,11 +147,11 @@ interface FaqItem {
         <div sanctumReveal class="lg:col-span-5">
           <sanctum-eyebrow class="mb-5">Where</sanctum-eyebrow>
           <sanctum-display size="lg" class="mb-6">
-            <h2>11750 Cedar Avenue.</h2>
+            <h2>{{ streetAddress() }}.</h2>
           </sanctum-display>
           <address class="not-italic font-body text-base md:text-lg text-sanctum-muted leading-relaxed mb-8 max-w-md">
-            <p class="text-sanctum-ink font-medium mb-1">11750 Cedar Avenue</p>
-            <p>Bloomington, CA 92316</p>
+            <p class="text-sanctum-ink font-medium mb-1">{{ streetAddress() }}</p>
+            <p>{{ cityRegion() }}</p>
             <p class="mt-4 text-sm">
               Twenty-five minutes east of downtown San Bernardino · twelve from Riverside · just off the 10 freeway.
             </p>
@@ -116,20 +161,20 @@ interface FaqItem {
               sanctumBtn
               variant="primary"
               size="sm"
-              href="https://maps.google.com/?q=11750+Cedar+Avenue+Bloomington+CA+92316"
+              [href]="directionsUrl()"
               target="_blank"
               rel="noopener noreferrer"
             >
               Get Directions
             </a>
-            <a sanctumBtn variant="ghost" size="sm" href="tel:909-996-2397">
-              Call · 909.996.2397
+            <a sanctumBtn variant="ghost" size="sm" [href]="'tel:' + phoneHref()">
+              Call · {{ phone() }}
             </a>
           </div>
         </div>
         <div sanctumReveal [delay]="150" class="lg:col-span-7">
           <sanctum-map-embed
-            query="11750 Cedar Avenue Bloomington CA 92316"
+            [query]="mapsQueryDisplay()"
             title="Map to Celestial Sanctum Parish"
           />
         </div>
@@ -144,22 +189,22 @@ interface FaqItem {
     <section id="service" class="py-20 md:py-24 px-6 bg-sanctum-paper border-y border-sanctum-rule">
       <div class="max-w-4xl mx-auto px-2 md:px-0">
         <div sanctumReveal>
-          <sanctum-eyebrow class="mb-5">What happens during service</sanctum-eyebrow>
+          <sanctum-eyebrow class="mb-5">{{ serviceEyebrow() }}</sanctum-eyebrow>
           <sanctum-display size="lg" class="mb-10">
             <h2>
-              Divinely revealed,
-              <span class="italic text-sanctum-burgundy">biblically grounded.</span>
+              {{ serviceHeading() }}
+              @if (serviceHeadingItalic()) {
+                <span class="italic text-sanctum-burgundy">{{ serviceHeadingItalic() }}</span>
+              }
             </h2>
           </sanctum-display>
           <p class="font-body text-lg text-sanctum-ink/85 leading-[1.75] mb-10 max-w-2xl">
-            A Celestial Church of Christ service is unconventional in appearance
-            and ancient in pattern. If you've never been to one, here's what you'll
-            see and why we do it that way.
+            {{ serviceIntro() }}
           </p>
         </div>
 
         <dl sanctumCascade stagger="default" class="space-y-10">
-          @for (item of serviceElements; track item.term) {
+          @for (item of serviceElements(); track item.term) {
             <div>
               <dt class="font-display italic text-2xl md:text-3xl text-sanctum-burgundy mb-3">
                 {{ item.term }}
@@ -176,14 +221,14 @@ interface FaqItem {
     <!-- FAQs -->
     <section id="faq" class="py-24 md:py-32 px-6 max-w-4xl mx-auto">
       <div sanctumReveal>
-        <sanctum-eyebrow class="mb-5">First time?</sanctum-eyebrow>
+        <sanctum-eyebrow class="mb-5">{{ faqEyebrow() }}</sanctum-eyebrow>
         <sanctum-display size="lg" class="mb-12">
-          <h2>Questions you might have.</h2>
+          <h2>{{ faqHeading() }}</h2>
         </sanctum-display>
       </div>
 
       <div sanctumCascade stagger="tight" class="space-y-10">
-        @for (faq of faqs; track faq.q) {
+        @for (faq of faqs(); track faq.q) {
           <div class="border-b border-sanctum-rule pb-10 last:border-b-0">
             <p class="font-display text-2xl text-sanctum-ink mb-3 leading-snug">
               {{ faq.q }}
@@ -228,7 +273,7 @@ interface FaqItem {
             variant="primary"
             tone="light"
             size="lg"
-            href="mailto:celestialsanctumparish@gmail.com"
+            [href]="'mailto:' + email()"
           >
             Email Us
           </a>
@@ -241,73 +286,45 @@ interface FaqItem {
   `,
 })
 export class Visit {
-  protected readonly schedule: ServiceSlot[] = [
-    { day: 'Sunday', detail: 'Worship · 10 AM – 2 PM', highlight: true },
-    { day: 'Monday', detail: 'Bible Study · 8 PM' },
-    { day: 'Tuesday', detail: 'Prophesying Into Your Situation · 8 PM' },
-    { day: 'Wednesday', detail: 'Seeker Service · 9 AM' },
-    { day: 'Thursday', detail: 'Midnight Vigil · 12 AM', highlight: true },
-    { day: 'Friday', detail: 'Power Day Service · 9:30 PM' },
-    { day: 'Saturday', detail: "Women's Fellowship · 5 PM" },
-  ];
+  private readonly sanity = inject(SanityService);
+  private readonly visitData = toSignal(this.sanity.visitPage(), { initialValue: null });
+  private readonly settingsData = toSignal(this.sanity.siteSettings(), { initialValue: null });
 
-  protected readonly serviceElements = [
-    {
-      term: 'You\'ll be asked to remove your shoes.',
-      definition:
-        'This follows the biblical pattern (Exodus 3:5) of approaching holy ground. Sandals or socks are fine. There is a rack at the entrance.',
-    },
-    {
-      term: 'White sutanas — encouraged but optional.',
-      definition:
-        'Members wear white robes called sutanas; visitors are not required to. The garments symbolize heavenly citizenship and the biblical attire of saints. If you come without one, you\'ll be just as welcome.',
-    },
-    {
-      term: 'Women wear head coverings.',
-      definition:
-        'In keeping with 1 Corinthians 11, women cover their heads during service. If you don\'t have one, there are coverings at the door.',
-    },
-    {
-      term: 'Seven candlesticks burn at the altar.',
-      definition:
-        'They represent the seven spirits of God described in Revelation. The altar itself represents God\'s throne.',
-    },
-    {
-      term: 'Incense and water are part of prayer.',
-      definition:
-        'Incense is burned during prayer for sanctification — a representation of prayer rising and of God\'s presence. Water sprinkling serves as purification, paralleling Old Testament practice and New Testament redemption through Christ.',
-    },
-    {
-      term: 'We kneel, bow, and lift our hands.',
-      definition:
-        'The parish emphasizes humble worship through posture — kneeling at moments of prayer, bowing at the altar, lifting hands during songs and intercession. Follow as you\'re able.',
-    },
-  ];
+  protected readonly heroEyebrow = computed(() => this.visitData()?.heroEyebrow ?? FALLBACK.heroEyebrow);
+  protected readonly heroHeadline = computed(() => this.visitData()?.heroHeadline ?? FALLBACK.heroHeadline);
+  protected readonly heroHeadlineItalic = computed(() => this.visitData()?.heroHeadlineItalic ?? FALLBACK.heroHeadlineItalic);
+  protected readonly heroSubcopy = computed(() => this.visitData()?.heroSubcopy ?? FALLBACK.heroSubcopy);
+  protected readonly whenEyebrow = computed(() => this.visitData()?.whenEyebrow ?? FALLBACK.whenEyebrow);
+  protected readonly whenHeading = computed(() => this.visitData()?.whenHeading ?? FALLBACK.whenHeading);
+  protected readonly whenSubcopy = computed(() => this.visitData()?.whenSubcopy ?? FALLBACK.whenSubcopy);
+  protected readonly schedule = computed<readonly ServiceSlot[]>(
+    () => this.visitData()?.schedule ?? FALLBACK.schedule,
+  );
+  protected readonly serviceEyebrow = computed(() => this.visitData()?.serviceEyebrow ?? FALLBACK.serviceEyebrow);
+  protected readonly serviceHeading = computed(() => this.visitData()?.serviceHeading ?? FALLBACK.serviceHeading);
+  protected readonly serviceHeadingItalic = computed(() => this.visitData()?.serviceHeadingItalic ?? FALLBACK.serviceHeadingItalic);
+  protected readonly serviceIntro = computed(() => this.visitData()?.serviceIntro ?? FALLBACK.serviceIntro);
+  protected readonly serviceElements = computed<readonly ServiceElement[]>(
+    () => this.visitData()?.serviceElements ?? FALLBACK.serviceElements,
+  );
+  protected readonly faqEyebrow = computed(() => this.visitData()?.faqEyebrow ?? FALLBACK.faqEyebrow);
+  protected readonly faqHeading = computed(() => this.visitData()?.faqHeading ?? FALLBACK.faqHeading);
+  protected readonly faqs = computed<readonly VisitFaq[]>(
+    () => this.visitData()?.faqs ?? FALLBACK.faqs,
+  );
 
-  protected readonly faqs: FaqItem[] = [
-    {
-      q: 'What should I wear?',
-      a: "Come as you are. Smart-casual is the norm for visitors — clean shirt, trousers or modest dress. You'll remove shoes at the entrance, and women cover their heads. The white sutana is for members and is not required of visitors.",
-    },
-    {
-      q: 'Can I bring my children?',
-      a: 'Yes. Children worship alongside the congregation; the parish runs a Youth Ministry that engages younger members through education, relationships, and Bible teaching. Stay with your kids during service — they\'re welcome at the altar.',
-    },
-    {
-      q: "I've never been to a Celestial Church before. Will I feel out of place?",
-      a: "You'll be visibly new — that's fine. Several members will greet you. The Wednesday morning Seeker Service at 9 AM is specifically shaped around people exploring the parish for the first time; consider starting there if a full Sunday feels like a lot.",
-    },
-    {
-      q: 'What about parking?',
-      a: 'There is on-site parking at 11750 Cedar Avenue with street parking nearby for Sunday overflow. Arrive 10–15 minutes early on Sundays to find a spot before the 10 AM start.',
-    },
-    {
-      q: 'How long is service?',
-      a: "Sunday worship runs from 10 AM to about 2 PM, with fellowship and food after. You're welcome to stay for the whole arc or leave when you need to.",
-    },
-    {
-      q: 'Is the service in English?',
-      a: 'Yes. Songs are sung in both Yoruba (the Celestial Church\'s Nigerian roots) and English; readings, prayers, and the message are in English. The choir often translates as they go.',
-    },
-  ];
+  protected readonly streetAddress = computed(() => this.settingsData()?.streetAddress ?? FALLBACK_SETTINGS.streetAddress);
+  protected readonly cityRegion = computed(() => this.settingsData()?.cityRegion ?? FALLBACK_SETTINGS.cityRegion);
+  protected readonly phone = computed(() => this.settingsData()?.parishPhone ?? FALLBACK_SETTINGS.parishPhone);
+  protected readonly phoneHref = computed(() => this.settingsData()?.parishPhoneHref ?? FALLBACK_SETTINGS.parishPhoneHref);
+  protected readonly email = computed(() => this.settingsData()?.parishEmail ?? FALLBACK_SETTINGS.parishEmail);
+  protected readonly directionsUrl = computed(() => {
+    const q = this.settingsData()?.mapsQuery ?? FALLBACK_SETTINGS.mapsQuery;
+    return `https://maps.google.com/?q=${q}`;
+  });
+  protected readonly mapsQueryDisplay = computed(() => {
+    const s = this.settingsData();
+    if (s) return `${s.streetAddress} ${s.cityRegion}`;
+    return `${FALLBACK_SETTINGS.streetAddress} ${FALLBACK_SETTINGS.cityRegion}`;
+  });
 }

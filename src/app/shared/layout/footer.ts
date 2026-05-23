@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../ui/icon';
 import { SanctumButton } from '../ui/button';
 import { Hairline } from '../ui/hairline';
 import { SanctumMark } from '../ui/sanctum-mark';
+import { SanityService } from '../../core/sanity/sanity.service';
 import {
   FOOTER_CONTACT,
   FOOTER_QUICKLINKS,
@@ -34,26 +36,26 @@ import {
             <p class="flex items-start gap-3">
               <span class="text-sanctum-gold mt-0.5"><sanctum-icon name="map-pin" [size]="16" /></span>
               <span class="text-sanctum-ink">
-                {{ contact.address }}<br />
-                {{ contact.city }}
+                {{ streetAddress() }}<br />
+                {{ cityRegion() }}
               </span>
             </p>
             <p class="flex items-center gap-3">
               <span class="text-sanctum-gold"><sanctum-icon name="phone" [size]="16" /></span>
               <a
-                [href]="'tel:' + contact.phoneHref"
+                [href]="'tel:' + phoneHref()"
                 class="text-sanctum-ink hover:text-sanctum-burgundy transition-colors"
               >
-                {{ contact.phone }}
+                {{ phone() }}
               </a>
             </p>
             <p class="flex items-center gap-3">
               <span class="text-sanctum-gold"><sanctum-icon name="mail" [size]="16" /></span>
               <a
-                [href]="'mailto:' + contact.email"
+                [href]="'mailto:' + email()"
                 class="text-sanctum-ink hover:text-sanctum-burgundy transition-colors break-all"
               >
-                {{ contact.email }}
+                {{ email() }}
               </a>
             </p>
           </address>
@@ -137,9 +139,17 @@ import {
   `,
 })
 export class Footer {
-  protected readonly contact = FOOTER_CONTACT;
+  private readonly sanity = inject(SanityService);
+  private readonly settingsData = toSignal(this.sanity.siteSettings(), { initialValue: null });
+
   protected readonly socials = SOCIALS;
   protected readonly quickLinks = FOOTER_QUICKLINKS;
   protected readonly resources = FOOTER_RESOURCES;
   protected readonly year = signal(new Date().getFullYear());
+
+  protected readonly streetAddress = computed(() => this.settingsData()?.streetAddress ?? FOOTER_CONTACT.address);
+  protected readonly cityRegion = computed(() => this.settingsData()?.cityRegion ?? FOOTER_CONTACT.city);
+  protected readonly phone = computed(() => this.settingsData()?.parishPhone ?? FOOTER_CONTACT.phone);
+  protected readonly phoneHref = computed(() => this.settingsData()?.parishPhoneHref ?? FOOTER_CONTACT.phoneHref);
+  protected readonly email = computed(() => this.settingsData()?.parishEmail ?? FOOTER_CONTACT.email);
 }

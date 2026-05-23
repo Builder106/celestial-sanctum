@@ -12,7 +12,14 @@ import { Observable, from, of } from 'rxjs';
 import { catchError, finalize, tap } from 'rxjs/operators';
 
 import { isSanityConfigured, sanityConfig } from './sanity.config';
-import type { AboutSection, Homepage, Pastor, SiteSettings } from './sanity.types';
+import type {
+  AboutSection,
+  BlogPost,
+  Homepage,
+  Pastor,
+  SiteSettings,
+  VisitPage,
+} from './sanity.types';
 
 // TransferState lets the server's CMS fetch flow into the prerendered HTML so
 // the browser doesn't re-fetch on hydration. Without this every CMS-driven
@@ -21,6 +28,8 @@ const homepageKey = makeStateKey<Homepage>('sanity:homepage');
 const pastorKey = makeStateKey<Pastor>('sanity:pastor');
 const settingsKey = makeStateKey<SiteSettings>('sanity:siteSettings');
 const aboutKey = makeStateKey<AboutSection[]>('sanity:aboutSections');
+const visitKey = makeStateKey<VisitPage>('sanity:visitPage');
+const blogKey = makeStateKey<BlogPost[]>('sanity:blogPosts');
 
 @Injectable({ providedIn: 'root' })
 export class SanityService {
@@ -44,12 +53,25 @@ export class SanityService {
       letterPullQuote, letterBody, signature
     }`,
     settings: `*[_type == "csSiteSettings"][0]{
-      parishName, parishAddress, parishPhone, parishEmail
+      parishName, streetAddress, cityRegion,
+      parishPhone, parishPhoneHref, parishEmail, mapsQuery
     }`,
     aboutSections: `*[_type == "csAboutSection"] | order(order asc){
       "anchorId": anchorId.current,
       label, eyebrow, heading, scripture,
       paragraphs, items[]{ term, definition }
+    }`,
+    visitPage: `*[_type == "csVisitPage"][0]{
+      heroEyebrow, heroHeadline, heroHeadlineItalic, heroSubcopy,
+      whenEyebrow, whenHeading, whenSubcopy,
+      schedule[]{ day, detail, highlight },
+      serviceEyebrow, serviceHeading, serviceHeadingItalic, serviceIntro,
+      serviceElements[]{ term, definition },
+      faqEyebrow, faqHeading,
+      faqs[]{ q, a }
+    }`,
+    blogPosts: `*[_type == "csBlogPost"] | order(publishDate desc) [0...5]{
+      title, href, displayDate, author, excerpt, imageUrl
     }`,
   };
 
@@ -67,6 +89,14 @@ export class SanityService {
 
   aboutSections(): Observable<AboutSection[] | null> {
     return this.fetch(aboutKey, this.queries.aboutSections);
+  }
+
+  visitPage(): Observable<VisitPage | null> {
+    return this.fetch(visitKey, this.queries.visitPage);
+  }
+
+  blogPosts(): Observable<BlogPost[] | null> {
+    return this.fetch(blogKey, this.queries.blogPosts);
   }
 
   private fetch<T>(key: ReturnType<typeof makeStateKey<T>>, query: string): Observable<T | null> {
