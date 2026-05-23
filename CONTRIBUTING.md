@@ -32,6 +32,8 @@ Hot module replacement is on.
 | `npm start` | `ng serve` — dev server with HMR on port 4200 |
 | `npm run build` | Production build + SSR + prerender (output in `dist/`) |
 | `npm test` | Vitest unit-test suite |
+| `npm run test:e2e` | Headless Playwright + Gherkin BDD suite (10 scenarios, ~2 min) |
+| `npm run test:demo` | Narrative video walkthroughs for the README (4 scenarios, ~3 min). Outputs to `e2e/demo/recordings/` |
 | `npm run watch` | Dev build that watches for changes |
 | `vercel deploy --prod` | Push current `dist/` straight to production |
 
@@ -41,13 +43,31 @@ Hot module replacement is on.
 src/app/
 ├── core/motion/           # Animation directives (sanctumReveal, sanctumCascade,
 │                          # sanctumDrawIn, sanctumLetterReveal, sanctumCiteRule)
+├── core/sanity/           # SanityService (TransferState + PendingTasks),
+│                          # GROQ queries, TypeScript types, Portable Text util
+├── core/seo/              # SeoService — per-route title/description/canonical
 ├── shared/
 │   ├── ui/                # Design-system primitives: Button (directive), Card,
 │   │                      # Display, Eyebrow, Icon, Quote, SanctumMark, etc.
 │   ├── layout/            # Header, Footer, nav-data
-│   └── embeds/            # Spotify, YouTube, Tockify, Map
+│   └── embeds/            # Spotify, YouTube, Tockify, Map (Spotify + YouTube
+│                          # are click-to-load facades)
 └── features/              # One folder per route — home, visit, about, watch,
                            # calendar, give, contact, styleguide, coming-soon
+
+api/                       # Vercel serverless functions — contact + newsletter
+sanity-schemas/            # csSiteSettings / csHomepage / csPastor /
+                           # csAboutSection / csVisitPage / csBlogPost
+studio/                    # Sanity Studio scaffold (own package.json,
+                           # re-exports schemaTypes from ../sanity-schemas)
+e2e/                       # Playwright + playwright-bdd
+├── features/              # QA Gherkin feature files (assertions, parallel)
+├── demo/features/         # Narrative video walkthroughs (single-worker,
+│                          # slowMo, video recording)
+├── steps/                 # Shared step library (both suites use the same)
+├── support/               # dwellForDemo helper, cursor injection script,
+│                          # slow-typing demoFill helper
+└── reporters/             # Custom reporter: webm → mp4 + discard warmups
 ```
 
 The design system + animation system are documented at `/__styleguide` on the
@@ -82,6 +102,36 @@ Open `http://localhost:4200/__styleguide` after `npm start`.
 - **Component selector prefix is `sanctum-`.** Directives use the `sanctum`
   camelCase prefix (e.g. `sanctumBtn`, `sanctumReveal`). Don't add
   unprefixed selectors.
+
+## E2E tests + demo recordings
+
+Two Gherkin suites share a step library and a shared dev server:
+
+- **QA suite** (`npm run test:e2e`) — fast, parallel, headless. Verifies
+  critical paths: home loads with the parish hero, primary nav routes
+  between pages, footer renders the parish address on every page.
+  Videos retained only on failure. Run before pushing.
+
+- **Demo suite** (`npm run test:demo`) — narrative video walkthroughs
+  for the README. Single-worker (parallel races the video subsystem),
+  slowMo for readability, custom cursor + zoom injected via
+  `addInitScript`. Outputs mp4s to `e2e/demo/recordings/` (gitignored).
+
+Step library at [`e2e/steps/common.steps.ts`](./e2e/steps/common.steps.ts)
+uses accessible selectors (`getByRole`, `getByLabel`, `getByText`).
+Animated text (the `sanctumLetterReveal`-wrapped h1) breaks role-name
+matching during hydration — see the `Then I see the heading` step for
+the role-or-text fallback pattern.
+
+To produce README-embedded demos:
+
+1. `npm run test:demo` (creates mp4s in `e2e/demo/recordings/`)
+2. `ffmpeg -i e2e/demo/recordings/<name>.mp4 -vf "fps=10,scale=960:-1" assets/demos/<name>.gif`
+3. Embed the GIF in README under a `<details>` section.
+
+Tuning env vars: `DEMO_SLOWMO` (default 1200ms), `DEMO_TYPE_DELAY`
+(70ms), `DEMO_TAIL_MS` (1500ms), `DEMO_DWELL_MS` (1500ms), `DEMO_ZOOM`
+(1.3).
 
 ## Commit-message convention
 
