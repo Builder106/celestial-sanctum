@@ -1,0 +1,49 @@
+# Dependabot configuration for celestial-sanctum
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Application dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 5
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-devkit/*"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "postcss"
+      motion:
+        patterns:
+          - "motion"
+      fontsource:
+        patterns:
+          - "@fontsource/*"
+      types:
+        patterns:
+          - "@types/*"
+      dev-tooling:
+        patterns:
+          - "typescript"
+          - "vitest"
+          - "prettier"
+          - "jsdom"
+    commit-message:
+      prefix: "deps"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
