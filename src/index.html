@@ -12,6 +12,16 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
+  <!-- Preconnect to third-party embed origins so the browser opens the TLS
+       handshake before the iframes / images request anything. ~100-300ms
+       improvement on LCP for /watch (Spotify + blog images) and on visit
+       interactions (YouTube facade click, Google Maps). -->
+  <link rel="preconnect" href="https://open.spotify.com" crossorigin>
+  <link rel="preconnect" href="https://www.youtube.com" crossorigin>
+  <link rel="preconnect" href="https://i.ytimg.com" crossorigin>
+  <link rel="dns-prefetch" href="https://i0.wp.com">
+  <link rel="dns-prefetch" href="https://www.google.com">
+
   <!-- Default Open Graph + Twitter Card tags. SeoService overrides title /
        description / canonical URL per route at runtime; image + site name stay
        constant across pages. -->
@@ -31,6 +41,50 @@
   <meta name="twitter:title" content="Celestial Sanctum Parish">
   <meta name="twitter:description" content="A parish of the Celestial Church of Christ in Bloomington, California. Sunday worship 10 AM – 2 PM, weekly vigil, podcast, and choir.">
   <meta name="twitter:image" content="https://celestial-sanctum.vercel.app/og-card.png">
+
+  <!-- JSON-LD structured data — describes the parish as a Church for
+       Google's Knowledge Graph + local search. Drives rich-result
+       eligibility (knowledge panel, Maps placement, opening hours).
+       Single static block; no per-page variation needed for a church
+       with one location. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Church",
+    "name": "Celestial Sanctum Parish",
+    "alternateName": "CCC Sanctum Parish",
+    "description": "A parish of the Celestial Church of Christ in Bloomington, California. Sunday worship, weekly vigil, podcast, and choir.",
+    "url": "https://celestial-sanctum.vercel.app/",
+    "image": "https://celestial-sanctum.vercel.app/og-card.png",
+    "logo": "https://celestial-sanctum.vercel.app/favicon.svg",
+    "telephone": "+1-909-996-2397",
+    "email": "celestialsanctumparish@gmail.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "11750 Cedar Avenue",
+      "addressLocality": "Bloomington",
+      "addressRegion": "CA",
+      "postalCode": "92316",
+      "addressCountry": "US"
+    },
+    "openingHoursSpecification": [
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Sunday", "opens": "10:00", "closes": "14:00" },
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Monday", "opens": "20:00", "closes": "21:30" },
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Tuesday", "opens": "20:00", "closes": "21:30" },
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Wednesday", "opens": "09:00", "closes": "10:30" },
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Thursday", "opens": "00:00", "closes": "02:00" },
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Friday", "opens": "21:30", "closes": "23:00" },
+      { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "17:00", "closes": "18:30" }
+    ],
+    "sameAs": [
+      "https://www.facebook.com/celestialsanctumparish",
+      "https://twitter.com/SanctumParish",
+      "https://instagram.com/sanctumparish",
+      "https://youtube.com/user/cccSanctumParish",
+      "https://open.spotify.com/show/0lQ2H8kaRG8nl6InuGUcC6"
+    ]
+  }
+  </script>
 </head>
 <body>
   <sanctum-root></sanctum-root>
