@@ -22,7 +22,7 @@ export interface Homepage {
   sundayRhythm: SundayBlock[];
 }
 
-export interface Pastor {
+export interface Shepherd {
   name: string;
   portraitUrl?: string;
   letterPullQuote: string;

@@ -1,7 +1,7 @@
 # Sanity setup
 
 Steps to finish wiring Phase 5. After these steps the homepage's hero,
-mission, pastor's letter, and Sunday rhythm will be edited from the Sanity
+mission, shepherd's letter, and Sunday rhythm will be edited from the Sanity
 Studio instead of being hardcoded.
 
 ## 1. Create the Sanity project
@@ -76,7 +76,7 @@ The Studio opens at `http://localhost:3333`. In the sidebar:
 
 1. **Site Settings** — create one. Fill in parish name / address / phone /
    email.
-2. **Pastor** — create one. Add a portrait, the "This is your house." pull
+2. **Shepherd** — create one. Add a portrait, the "This is your house." pull
    quote, the letter body, and the signature.
 3. **Homepage** — create one. Copy the hero / mission / Sunday-rhythm strings
    from the current hardcoded fallback in
@@ -97,7 +97,7 @@ anything locally.
 ## 7. Verify
 
 `npm run build` from the repo root, then `vercel deploy --prod --yes`. The
-homepage should read its hero, mission, Sunday rhythm, and pastor's letter
+homepage should read its hero, mission, Sunday rhythm, and shepherd's letter
 from Sanity. If the CMS fetch fails for any reason (CORS, network, project
 ID typo), the page silently falls back to the hardcoded `FALLBACK` block —
 nothing breaks.

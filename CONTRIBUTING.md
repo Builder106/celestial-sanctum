@@ -56,7 +56,7 @@ src/app/
                            # calendar, give, contact, styleguide, coming-soon
 
 api/                       # Vercel serverless functions — contact + newsletter
-sanity-schemas/            # csSiteSettings / csHomepage / csPastor /
+sanity-schemas/            # csSiteSettings / csHomepage / csShepherd /
                            # csAboutSection / csVisitPage / csBlogPost
 studio/                    # Sanity Studio scaffold (own package.json,
                            # re-exports schemaTypes from ../sanity-schemas)

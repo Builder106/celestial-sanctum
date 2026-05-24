@@ -96,15 +96,15 @@ const docs = [
   },
 
   {
-    _id: 'pastor',
-    _type: 'csPastor',
-    name: 'The Pastor',
+    _id: 'shepherd',
+    _type: 'csShepherd',
+    name: 'The Shepherd',
     letterPullQuote: '"This is your house."',
     letterBody: paragraphs(
       "Whether you've worshipped with us for years or are visiting for the first time, this is your house. Our parish keeps the rhythm — Sunday worship, the Thursday vigil, the choir's hymns in Yoruba and English — and it's here for you to step into at any time.",
       'If you carry a question, a grief, or a thanksgiving, bring it. The doors are open.',
     ),
-    signature: '— The Pastor',
+    signature: '— The Shepherd',
   },
 
   aboutSection({
@@ -139,9 +139,9 @@ const docs = [
     order: 30,
     label: 'Shepherd',
     eyebrow: 'Shepherd',
-    heading: 'A pastor for the parish.',
+    heading: 'A shepherd for the parish.',
     paragraphs: paragraphs(
-      'The parish welcomes visitors as part of the Celestial Church of Christ, located at 11750 Cedar Avenue in Bloomington. The pastor leads the congregation in winning and nurturing souls for the kingdom of God while carrying forward the Christian message.',
+      'The parish welcomes visitors as part of the Celestial Church of Christ, located at 11750 Cedar Avenue in Bloomington. The shepherd leads the congregation in winning and nurturing souls for the kingdom of God while carrying forward the Christian message.',
       'The parish emphasizes spiritual growth through multiple ministries, fellowship opportunities, and educational content — an active presence across the podcast, blog, and weekly community gatherings.',
     ),
   }),

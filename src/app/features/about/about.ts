@@ -53,9 +53,9 @@ const FALLBACK: AboutSection[] = [
     id: 'shepherd',
     label: 'Shepherd',
     eyebrow: 'Shepherd',
-    heading: 'A pastor for the parish.',
+    heading: 'A shepherd for the parish.',
     paragraphs: [
-      'The parish welcomes visitors as part of the Celestial Church of Christ, located at 11750 Cedar Avenue in Bloomington. The pastor leads the congregation in winning and nurturing souls for the kingdom of God while carrying forward the Christian message.',
+      'The parish welcomes visitors as part of the Celestial Church of Christ, located at 11750 Cedar Avenue in Bloomington. The shepherd leads the congregation in winning and nurturing souls for the kingdom of God while carrying forward the Christian message.',
       'The parish emphasizes spiritual growth through multiple ministries, fellowship opportunities, and educational content — an active presence across the podcast, blog, and weekly community gatherings.',
     ],
   },

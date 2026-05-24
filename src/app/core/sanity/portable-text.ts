@@ -1,7 +1,7 @@
 import type { PortableTextBlock } from '@portabletext/types';
 
 // Flattens one Portable Text block to a plain paragraph string. Good enough
-// for short-prose sections (pastor letter, about-page paragraphs). For richer
+// for short-prose sections (shepherd letter, about-page paragraphs). For richer
 // rendering — links, inline marks beyond italic — switch to
 // @portabletext/to-html-string and render via [innerHTML].
 export function blockToPlainText(block: PortableTextBlock | string): string {

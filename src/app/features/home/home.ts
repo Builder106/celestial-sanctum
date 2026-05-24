@@ -32,12 +32,12 @@ const FALLBACK = {
   missionEyebrow: 'Our Mission',
   missionQuote:
     'The church exists to win and nurture souls for the kingdom of God — to carry the cross of Jesus, lift it high, and make Him known.',
-  pastorPullQuote: '"This is your house."',
-  pastorParagraphs: [
+  shepherdPullQuote: '"This is your house."',
+  shepherdParagraphs: [
     "Whether you've worshipped with us for years or are visiting for the first time, this is your house. Our parish keeps the rhythm — Sunday worship, the Thursday vigil, the choir's hymns in Yoruba and English — and it's here for you to step into at any time.",
     'If you carry a question, a grief, or a thanksgiving, bring it. The doors are open.',
   ],
-  pastorSignature: '— The Pastor',
+  shepherdSignature: '— The Shepherd',
   sundayRhythm: [
     {
       time: '10 AM',
@@ -175,14 +175,14 @@ const FALLBACK = {
       </div>
     </section>
 
-    <!-- Pastor's letter -->
+    <!-- Shepherd's letter -->
     <section class="py-24 md:py-32 px-6 bg-sanctum-paper border-y border-sanctum-rule">
       <div sanctumCascade stagger="default" class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16 items-start">
         <div class="md:col-span-4 lg:col-span-3 flex flex-col items-center md:items-start">
-          @if (pastorPortrait(); as portrait) {
+          @if (shepherdPortrait(); as portrait) {
             <img
               [src]="portrait"
-              alt="Portrait of the pastor"
+              alt="Portrait of the shepherd"
               class="w-48 h-48 md:w-full md:aspect-square md:h-auto max-w-[14rem] rounded-full object-cover border-2 border-sanctum-gold"
             />
           } @else {
@@ -193,7 +193,7 @@ const FALLBACK = {
                 xmlns="http://www.w3.org/2000/svg"
                 class="absolute inset-0 w-full h-full"
                 role="img"
-                aria-label="Placeholder portrait of the pastor"
+                aria-label="Placeholder portrait of the shepherd"
               >
                 <circle cx="100" cy="80" r="32" fill="var(--color-sanctum-cream)" />
                 <path
@@ -213,17 +213,17 @@ const FALLBACK = {
         </div>
 
         <div class="md:col-span-8 lg:col-span-9">
-          <sanctum-eyebrow class="mb-5">From the Pastor</sanctum-eyebrow>
+          <sanctum-eyebrow class="mb-5">From the Shepherd</sanctum-eyebrow>
           <p class="font-display text-3xl md:text-4xl text-sanctum-ink leading-[1.2] mb-8">
-            {{ pastorPullQuote() }}
+            {{ shepherdPullQuote() }}
           </p>
           <div class="space-y-5 font-body text-base md:text-lg text-sanctum-ink/85 leading-[1.75] max-w-2xl">
-            @for (paragraph of pastorParagraphs(); track $index) {
+            @for (paragraph of shepherdParagraphs(); track $index) {
               <p>{{ paragraph }}</p>
             }
           </div>
           <p class="mt-10 font-display italic text-xl text-sanctum-burgundy">
-            {{ pastorSignature() }}
+            {{ shepherdSignature() }}
           </p>
         </div>
       </div>
@@ -373,7 +373,7 @@ export class Home {
   }
 
   private readonly homepageData = toSignal(this.sanity.homepage(), { initialValue: null });
-  private readonly pastorData = toSignal(this.sanity.pastor(), { initialValue: null });
+  private readonly shepherdData = toSignal(this.sanity.shepherd(), { initialValue: null });
   private readonly settingsData = toSignal(this.sanity.siteSettings(), { initialValue: null });
 
   // Each section reads CMS-first, falling back to the hardcoded constants.
@@ -389,17 +389,17 @@ export class Home {
     () => this.homepageData()?.sundayRhythm ?? FALLBACK.sundayRhythm,
   );
 
-  protected readonly pastorPortrait = computed(() => this.pastorData()?.portraitUrl ?? null);
-  protected readonly pastorPullQuote = computed(
-    () => this.pastorData()?.letterPullQuote ?? FALLBACK.pastorPullQuote,
+  protected readonly shepherdPortrait = computed(() => this.shepherdData()?.portraitUrl ?? null);
+  protected readonly shepherdPullQuote = computed(
+    () => this.shepherdData()?.letterPullQuote ?? FALLBACK.shepherdPullQuote,
   );
-  protected readonly pastorParagraphs = computed<readonly string[]>(() => {
-    const body = this.pastorData()?.letterBody;
-    if (!body || body.length === 0) return FALLBACK.pastorParagraphs;
+  protected readonly shepherdParagraphs = computed<readonly string[]>(() => {
+    const body = this.shepherdData()?.letterBody;
+    if (!body || body.length === 0) return FALLBACK.shepherdParagraphs;
     return body.map(blockToPlainText).filter((p) => p.length > 0);
   });
-  protected readonly pastorSignature = computed(
-    () => this.pastorData()?.signature ?? FALLBACK.pastorSignature,
+  protected readonly shepherdSignature = computed(
+    () => this.shepherdData()?.signature ?? FALLBACK.shepherdSignature,
   );
 
   protected readonly parishAddressInline = computed(() => {

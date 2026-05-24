@@ -18,7 +18,7 @@ Feature: Home page renders core parish content
     And I see the text "Worship"
     And I see the text "Fellowship"
 
-  Scenario: Home shows the pastor's letter and closing CTAs
+  Scenario: Home shows the shepherd's letter and closing CTAs
     Given I am on the home page
     Then I see the text "This is your house"
     And I see the text "Find us in Bloomington"

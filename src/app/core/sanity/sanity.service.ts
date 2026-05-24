@@ -16,7 +16,7 @@ import type {
   AboutSection,
   BlogPost,
   Homepage,
-  Pastor,
+  Shepherd,
   SiteSettings,
   VisitPage,
 } from './sanity.types';
@@ -25,7 +25,7 @@ import type {
 // the browser doesn't re-fetch on hydration. Without this every CMS-driven
 // page would re-pay the network round-trip after first paint.
 const homepageKey = makeStateKey<Homepage>('sanity:homepage');
-const pastorKey = makeStateKey<Pastor>('sanity:pastor');
+const shepherdKey = makeStateKey<Shepherd>('sanity:shepherd');
 const settingsKey = makeStateKey<SiteSettings>('sanity:siteSettings');
 const aboutKey = makeStateKey<AboutSection[]>('sanity:aboutSections');
 const visitKey = makeStateKey<VisitPage>('sanity:visitPage');
@@ -48,7 +48,7 @@ export class SanityService {
       missionEyebrow, missionQuote,
       sundayRhythm[]{ time, heading, body }
     }`,
-    pastor: `*[_type == "csPastor"][0]{
+    shepherd: `*[_type == "csShepherd"][0]{
       name, "portraitUrl": portrait.asset->url,
       letterPullQuote, letterBody, signature
     }`,
@@ -79,8 +79,8 @@ export class SanityService {
     return this.fetch(homepageKey, this.queries.homepage);
   }
 
-  pastor(): Observable<Pastor | null> {
-    return this.fetch(pastorKey, this.queries.pastor);
+  shepherd(): Observable<Shepherd | null> {
+    return this.fetch(shepherdKey, this.queries.shepherd);
   }
 
   siteSettings(): Observable<SiteSettings | null> {

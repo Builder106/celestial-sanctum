@@ -146,7 +146,7 @@ import { SanctumMark } from '../../shared/ui/sanctum-mark';
             <sanctum-eyebrow tone="gold" class="mb-4">Gold</sanctum-eyebrow>
             <h3 class="font-display text-2xl text-sanctum-ink mb-3">Gold-bordered card</h3>
             <p class="font-body text-sm text-sanctum-muted leading-relaxed">
-              Brass-bell accent border for high-emphasis features — pastor's
+              Brass-bell accent border for high-emphasis features — shepherd's
               letter, give cards.
             </p>
           </sanctum-card>
