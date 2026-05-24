@@ -23,6 +23,8 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
       alt=""
       [attr.width]="size()"
       [attr.height]="size()"
+      [style.width.px]="size()"
+      [style.height.px]="size()"
       [style.filter]="filter()"
       decoding="async"
       loading="lazy"
@@ -34,8 +36,6 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
       line-height: 0;
     }
     img {
-      width: var(--mark-size, auto);
-      height: var(--mark-size, auto);
       transition: filter 0.2s ease;
     }
   `,

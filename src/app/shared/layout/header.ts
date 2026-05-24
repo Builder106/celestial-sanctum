@@ -16,13 +16,18 @@ import { PRIMARY_NAV } from './nav-data';
       <div class="max-w-6xl mx-auto px-6 md:px-10 py-5 flex justify-between items-center gap-6">
         <a
           routerLink="/"
-          class="flex items-center gap-3 text-sanctum-ink"
+          class="group flex items-center gap-4 text-sanctum-ink"
           (click)="closeMobile()"
           aria-label="Celestial Sanctum Parish — home"
         >
-          <sanctum-mark [size]="44" />
-          <span class="font-display italic text-xl md:text-2xl font-medium tracking-tight leading-none text-sanctum-ink">
-            Celestial Sanctum
+          <sanctum-mark [size]="52" class="shrink-0 transition-transform duration-300 group-hover:scale-105" />
+          <span class="hidden sm:flex flex-col leading-none">
+            <span class="font-display italic text-2xl md:text-[28px] font-medium tracking-[-0.015em] text-sanctum-ink">
+              Celestial Sanctum
+            </span>
+            <span class="mt-1.5 font-display italic text-base md:text-lg font-normal tracking-wide text-sanctum-burgundy">
+              Parish
+            </span>
           </span>
         </a>
 
