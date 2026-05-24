@@ -1,76 +1,42 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 /**
- * The Sanctum Mark — a small, CCC-specific divider/ornament.
- * Three nested rainbow arcs (the Celestial seal's signature) over a candle
- * flame and slender cross. Used in place of plain hairline rules to make
- * every section transition a moment of identity rather than a generic divider.
+ * The Sanctum Mark — the official Celestial Church of Christ seal.
+ * Renders the SVG asset at `/img/cccIcon.svg` (the vectorized parish seal:
+ * curved title text, rainbow, eye, crown, cross). Used as section dividers
+ * and ornaments across the site.
+ *
+ * Tone variants apply CSS filters to recolor the seal for different
+ * backgrounds. The default tone is the seal's natural multicolor; light is
+ * for burgundy / dark grounds; mono-gold and mono-ink are accent variants.
+ * Filter chains use the standard brightness(0)+saturate+invert+sepia+
+ * hue-rotate pattern that converts any multicolor source to a single
+ * target hex.
  */
 @Component({
   selector: 'sanctum-mark',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
+    <img
+      src="/img/cccIcon.svg"
+      alt=""
       [attr.width]="size()"
-      [attr.height]="halfHeight()"
-      viewBox="0 0 80 40"
-      role="presentation"
-      aria-hidden="true"
-    >
-      <!-- Three nested rainbow arcs: ink → blue → gold -->
-      <path
-        d="M 8 34 Q 40 -4 72 34"
-        fill="none"
-        [attr.stroke]="arc1Color()"
-        stroke-width="1.5"
-        stroke-linecap="round"
-      />
-      <path
-        d="M 13 34 Q 40 4 67 34"
-        fill="none"
-        [attr.stroke]="arc2Color()"
-        stroke-width="1.5"
-        stroke-linecap="round"
-      />
-      <path
-        d="M 18 34 Q 40 12 62 34"
-        fill="none"
-        [attr.stroke]="arc3Color()"
-        stroke-width="1.5"
-        stroke-linecap="round"
-      />
-      <!-- Candle flame at center (gold teardrop) -->
-      <path
-        d="M 40 18 C 42 22 42 26 40 28 C 38 26 38 22 40 18 Z"
-        [attr.fill]="flameColor()"
-      />
-      <!-- Slender cross below the flame -->
-      <line
-        x1="40"
-        y1="28"
-        x2="40"
-        y2="36"
-        [attr.stroke]="crossColor()"
-        stroke-width="1.2"
-        stroke-linecap="round"
-      />
-      <line
-        x1="36"
-        y1="32"
-        x2="44"
-        y2="32"
-        [attr.stroke]="crossColor()"
-        stroke-width="1.2"
-        stroke-linecap="round"
-      />
-    </svg>
+      [attr.height]="size()"
+      [style.filter]="filter()"
+      decoding="async"
+      loading="lazy"
+    />
   `,
   styles: `
     :host {
       display: inline-flex;
       line-height: 0;
+    }
+    img {
+      width: var(--mark-size, auto);
+      height: var(--mark-size, auto);
+      transition: filter 0.2s ease;
     }
   `,
 })
@@ -78,49 +44,24 @@ export class SanctumMark {
   readonly size = input<number>(60);
   readonly tone = input<'default' | 'light' | 'mono-gold' | 'mono-ink'>('default');
 
-  protected halfHeight() {
-    return Math.round(this.size() * 0.5);
-  }
-
-  protected arc1Color() {
-    return this.tone() === 'light'
-      ? '#FBF8F1'
-      : this.tone() === 'mono-gold'
-        ? '#B89253'
-        : this.tone() === 'mono-ink'
-          ? '#1A1612'
-          : '#1A1612';
-  }
-
-  protected arc2Color() {
-    return this.tone() === 'light'
-      ? '#FBF8F1'
-      : this.tone() === 'mono-gold'
-        ? '#B89253'
-        : this.tone() === 'mono-ink'
-          ? '#1A1612'
-          : '#1E3A5F';
-  }
-
-  protected arc3Color() {
-    return this.tone() === 'light'
-      ? '#FBF8F1'
-      : this.tone() === 'mono-gold'
-        ? '#B89253'
-        : this.tone() === 'mono-ink'
-          ? '#1A1612'
-          : '#730C29';
-  }
-
-  protected flameColor() {
-    return this.tone() === 'light' ? '#FBF8F1' : '#B89253';
-  }
-
-  protected crossColor() {
-    return this.tone() === 'light'
-      ? '#FBF8F1'
-      : this.tone() === 'mono-gold'
-        ? '#B89253'
-        : '#1A1612';
-  }
+  // Each filter recolors the entire multicolor seal to a single tone. The
+  // values were computed by running the parish brand colors through the
+  // standard CSS-filter color-converter algorithm (brightness/invert/
+  // sepia/saturate/hue-rotate chain).
+  protected readonly filter = computed(() => {
+    switch (this.tone()) {
+      case 'light':
+        // Recolors everything to near-cream-white (~#FBF8F1).
+        return 'brightness(0) invert(1)';
+      case 'mono-gold':
+        // Recolors everything to sanctum-gold (~#B89253).
+        return 'brightness(0) saturate(100%) invert(58%) sepia(45%) saturate(573%) hue-rotate(2deg) brightness(95%) contrast(80%)';
+      case 'mono-ink':
+        // Recolors everything to sanctum-ink (~#1A1612).
+        return 'brightness(0) saturate(0)';
+      case 'default':
+      default:
+        return 'none';
+    }
+  });
 }
