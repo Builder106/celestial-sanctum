@@ -22,11 +22,11 @@ import { PRIMARY_NAV } from './nav-data';
         >
           <sanctum-mark [size]="52" class="shrink-0 transition-transform duration-300 group-hover:scale-105" />
           <span class="hidden sm:flex flex-col leading-none">
-            <span class="font-display italic text-2xl md:text-[28px] font-medium tracking-[-0.015em] text-sanctum-ink">
+            <span class="font-display font-semibold uppercase text-xl md:text-[22px] tracking-[0.18em] text-sanctum-ink whitespace-nowrap">
               Celestial Sanctum
             </span>
-            <span class="mt-1.5 font-display italic text-base md:text-lg font-normal tracking-wide text-sanctum-burgundy">
-              Parish
+            <span class="mt-2.5 font-body text-[10px] md:text-[11px] font-semibold uppercase tracking-[0.35em] text-sanctum-blue">
+              Bloomington · California
             </span>
           </span>
         </a>
