@@ -110,3 +110,49 @@ nothing breaks.
 - `serviceTime` documents driving the `/visit` schedule
 - The burgundy "Find us in Bloomington" closer → `csSiteSettings`-backed
   fields
+
+## Auto-rebuild on publish (via GitHub empty commit)
+
+Sanity publishes go through `/api/sanity-publish-hook` which creates a
+descriptive empty commit on `main`. Vercel's git integration then deploys
+the new commit, giving the parish a real audit trail in `git log` plus
+accurate labels in the Vercel deployment list (`CMS: published
+csHomepage/homepage` instead of the stale last-code-commit message).
+
+**One-time setup** (after the function lands in production):
+
+1. **GitHub PAT** — https://github.com/settings/personal-access-tokens/new
+   - Fine-grained token name: `Celestial Sanctum CMS publish`
+   - Expiration: 1 year (set a calendar reminder to rotate)
+   - Repository access: **Only select repositories** → `celestial-sanctum`
+   - Permissions → Repository permissions → **Contents: Read and write**
+   - Generate, **copy** the `github_pat_…` value
+
+2. **Vercel env var** — https://vercel.com/Builder106/celestial-sanctum/settings/environment-variables
+   - Name: `GITHUB_PUBLISH_TOKEN`
+   - Value: paste the PAT from step 1
+   - Environments: Production (+ Preview if you want the hook live there too)
+   - Save, then redeploy or wait for the next deploy to pick it up
+
+3. **(Optional) Sanity webhook secret** — same env-vars page on Vercel
+   - Name: `SANITY_WEBHOOK_SECRET`
+   - Value: any 32+ char random string (e.g. `openssl rand -hex 32`)
+   - Save. The function will validate HMAC signatures when this is set.
+
+4. **Repoint the Sanity webhook** — https://www.sanity.io/manage/project/jsf7d3td/api/webhooks
+   - Edit the existing "Vercel Deploy" webhook
+   - Change URL from the Vercel deploy hook to:
+     `https://celestial-sanctum.vercel.app/api/sanity-publish-hook`
+   - (If you set `SANITY_WEBHOOK_SECRET`) paste the same secret into the
+     webhook's **Secret** field
+   - Save
+
+5. **Test** — open Studio, edit any doc, click **Publish**. Within ~10s
+   you should see a new commit on `main` with message
+   `CMS: published <type>/<id>` (visible via `git log` or in the
+   Vercel deployment list). The build takes ~60-90s; reload the live
+   site after that and the change is there.
+
+**Disable the old deploy hook** once the new flow is verified — leave it
+in Vercel's settings (in case you want to fall back) but don't point
+Sanity at it.
