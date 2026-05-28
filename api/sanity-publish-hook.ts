@@ -1,8 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-// `crypto` (not `node:crypto`) — Vercel's function bundler doesn't always
-// resolve the prefixed form, causing the module to fail to load at runtime
-// (FUNCTION_INVOCATION_FAILED with no useful error in the logs).
-import { createHmac, timingSafeEqual } from 'crypto';
+import { timingSafeEqual } from 'crypto';
 
 // POST /api/sanity-publish-hook — receives a Sanity webhook on every doc
 // publish and creates an empty commit on `main` via the GitHub API. The
@@ -15,10 +12,11 @@ import { createHmac, timingSafeEqual } from 'crypto';
 // Env vars:
 //   GITHUB_PUBLISH_TOKEN     — fine-grained PAT with Contents:write on
 //                              Builder106/celestial-sanctum
-//   SANITY_WEBHOOK_SECRET    — optional. If set, the function validates
-//                              the Sanity webhook signature header
-//                              (`sanity-webhook-signature: t=<ts>,v1=<hmac>`).
-//                              Recommended for production.
+//   SANITY_WEBHOOK_SECRET    — optional. If set, the function checks for
+//                              a matching `X-Webhook-Secret` header on each
+//                              request. Configure the header in Sanity's
+//                              webhook "Headers" section. Recommended for
+//                              production (rejects random POSTs to this URL).
 
 const REPO = 'Builder106/celestial-sanctum';
 const BRANCH = 'main';
@@ -38,29 +36,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       return;
     }
 
-    // Optional HMAC verification. Sanity sends a header like
-    // `sanity-webhook-signature: t=1716500000,v1=<hex>` where `v1` is
-    // HMAC-SHA256(`${t}.${rawBody}`) using the shared secret.
+    // Optional shared-secret check. Sanity is configured to send a static
+    // `X-Webhook-Secret: <value>` header (set in the webhook's Headers
+    // section). We compare it to the env var using a constant-time compare.
+    //
+    // We deliberately do NOT use Sanity's HMAC-signed `sanity-webhook-signature`
+    // header here — Vercel's @vercel/node auto-parses JSON bodies before this
+    // handler runs, so we can't reconstruct the exact bytes Sanity signed.
     const secret = process.env['SANITY_WEBHOOK_SECRET'];
     if (secret) {
-      const sig = req.headers['sanity-webhook-signature'];
-      if (typeof sig !== 'string') {
-        res.status(401).json({ error: 'Missing Sanity signature header' });
+      const provided = req.headers['x-webhook-secret'];
+      const providedStr = Array.isArray(provided) ? provided[0] : provided;
+      if (typeof providedStr !== 'string') {
+        res.status(401).json({ error: 'Missing X-Webhook-Secret header' });
         return;
       }
-      const parts = Object.fromEntries(
-        sig.split(',').map((kv) => kv.split('=').map((p) => p.trim())),
-      ) as { t?: string; v1?: string };
-      if (!parts.t || !parts.v1) {
-        res.status(401).json({ error: 'Malformed signature header' });
-        return;
-      }
-      const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body ?? {});
-      const expected = createHmac('sha256', secret).update(`${parts.t}.${rawBody}`).digest('hex');
-      const a = Buffer.from(expected);
-      const b = Buffer.from(parts.v1);
+      const a = Buffer.from(secret);
+      const b = Buffer.from(providedStr);
       if (a.length !== b.length || !timingSafeEqual(a, b)) {
-        res.status(401).json({ error: 'Invalid signature' });
+        res.status(401).json({ error: 'Invalid webhook secret' });
         return;
       }
     }

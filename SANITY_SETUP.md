@@ -134,18 +134,29 @@ csHomepage/homepage` instead of the stale last-code-commit message).
    - Environments: Production (+ Preview if you want the hook live there too)
    - Save, then redeploy or wait for the next deploy to pick it up
 
-3. **(Optional) Sanity webhook secret** — same env-vars page on Vercel
+3. **(Optional) Shared webhook secret** — same env-vars page on Vercel
    - Name: `SANITY_WEBHOOK_SECRET`
    - Value: any 32+ char random string (e.g. `openssl rand -hex 32`)
-   - Save. The function will validate HMAC signatures when this is set.
+   - Save. The function will reject any request whose `X-Webhook-Secret`
+     header doesn't match.
 
 4. **Repoint the Sanity webhook** — https://www.sanity.io/manage/project/jsf7d3td/api/webhooks
    - Edit the existing "Vercel Deploy" webhook
    - Change URL from the Vercel deploy hook to:
      `https://celestial-sanctum.vercel.app/api/sanity-publish-hook`
-   - (If you set `SANITY_WEBHOOK_SECRET`) paste the same secret into the
-     webhook's **Secret** field
+   - Leave the **Secret** field empty (we don't use Sanity's HMAC
+     signature — see note below).
+   - Open **HTTP Headers** → **Add header**:
+     - Name: `X-Webhook-Secret`
+     - Value: paste the same string you set as `SANITY_WEBHOOK_SECRET`
    - Save
+
+   > Why a custom header instead of Sanity's built-in HMAC `Secret` field?
+   > Vercel's Node runtime auto-parses JSON request bodies before the
+   > handler runs, so the function can't reconstruct the exact bytes
+   > Sanity signed — every HMAC check would fail. A static shared-secret
+   > header is enough for this use case (an obscure URL with a low
+   > blast radius if bypassed).
 
 5. **Test** — open Studio, edit any doc, click **Publish**. Within ~10s
    you should see a new commit on `main` with message
