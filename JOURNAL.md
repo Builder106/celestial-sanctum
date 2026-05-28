@@ -6,6 +6,21 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-05-28 — Migrate /calendar from Tockify to Google Calendar #pivot
+
+Tockify was the live site's calendar embed but the slug never resolved
+after the parish handed off the project, and the Tockify free tier
+caps at a small number of events. Parish already owns
+`celestialsanctumparish@gmail.com` and uses Google Calendar to manage
+the week, so the embed now points at that public calendar — zero new
+account, zero ongoing cost, integrates with every visitor's calendar
+client through the standard public-URL subscription. Replaced
+sanctum-tockify-embed (script-injection + slug + loading state) with
+sanctum-google-calendar-embed (one iframe). Page also picked up a
+small "Add the parish calendar" link so visitors can subscribe in
+their own client. Parish-side setup is a one-time toggle in Google
+Calendar to make the calendar public; documented in CALENDAR_SETUP.md.
+
 ## 2026-05-28 — Self-host Sanity Studio for parish-branded admin URL #decision
 
 The default Sanity-hosted Studio lives at `celestial-sanctum.sanity.studio`,

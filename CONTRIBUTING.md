@@ -50,8 +50,8 @@ src/app/
 │   ├── ui/                # Design-system primitives: Button (directive), Card,
 │   │                      # Display, Eyebrow, Icon, Quote, SanctumMark, etc.
 │   ├── layout/            # Header, Footer, nav-data
-│   └── embeds/            # Spotify, YouTube, Tockify, Map (Spotify + YouTube
-│                          # are click-to-load facades)
+│   └── embeds/            # Spotify, YouTube, Google Calendar, Map
+│                          # (Spotify + YouTube are click-to-load facades)
 └── features/              # One folder per route — home, visit, about, watch,
                            # calendar, give, contact, styleguide, coming-soon
 
@@ -157,7 +157,7 @@ fix: hero
 ## Pull request process
 
 1. Branch from `main`. Name the branch after the feature or fix:
-   `mobile-hero-crop`, `add-tockify-slug`, etc.
+   `mobile-hero-crop`, `tune-calendar-embed`, etc.
 2. Keep PRs focused. A new page is one PR; a refactor of the button system is
    another; don't bundle them.
 3. Run `npm run build` locally before pushing — the prerender step catches a

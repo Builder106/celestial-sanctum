@@ -4,7 +4,7 @@ import { SeoService } from '../../core/seo/seo.service';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
-import { TockifyEmbed } from '../../shared/embeds/tockify-embed';
+import { GoogleCalendarEmbed } from '../../shared/embeds/google-calendar-embed';
 import { SanctumReveal } from '../../core/motion/reveal.directive';
 import { SanctumCascade } from '../../core/motion/cascade.directive';
 import { SanctumDrawIn } from '../../core/motion/draw-in.directive';
@@ -20,7 +20,7 @@ interface RecurringService {
   selector: 'sanctum-calendar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Display, Eyebrow, SanctumButton, SanctumCascade, SanctumDrawIn, SanctumMark, SanctumReveal, TockifyEmbed],
+  imports: [Display, Eyebrow, SanctumButton, SanctumCascade, SanctumDrawIn, SanctumMark, SanctumReveal, GoogleCalendarEmbed],
   template: `
     <!-- Page hero -->
     <section sanctumCascade stagger="spaced" class="pt-24 md:pt-32 pb-12 px-6 max-w-6xl mx-auto">
@@ -80,7 +80,7 @@ interface RecurringService {
       <sanctum-mark [size]="56" />
     </div>
 
-    <!-- Tockify event calendar -->
+    <!-- Google Calendar event embed -->
     <section id="events" class="scroll-mt-28 py-12 md:py-16 px-6 max-w-6xl mx-auto">
       <header sanctumReveal class="mb-10 max-w-2xl">
         <sanctum-eyebrow class="mb-4">Upcoming events</sanctum-eyebrow>
@@ -92,13 +92,24 @@ interface RecurringService {
         </sanctum-display>
         <p class="font-body text-base md:text-lg text-sanctum-muted leading-relaxed">
           Harvest, baptisms, choir releases, special vigils. Synced from the
-          parish's Tockify calendar.
+          parish's Google Calendar.
         </p>
       </header>
 
       <div sanctumReveal [delay]="150">
-        <sanctum-tockify-embed [calendarSlug]="tockifySlug" />
+        <sanctum-google-calendar-embed [calendarId]="calendarId" />
       </div>
+
+      <p class="mt-6 font-body text-sm text-sanctum-muted text-center">
+        Prefer your own calendar app?
+        <a
+          [href]="addToCalendarHref"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-sanctum-blue underline decoration-sanctum-gold/60 underline-offset-4 hover:decoration-sanctum-gold"
+        >Add the parish calendar</a>
+        to Google Calendar, Apple Calendar, or Outlook.
+      </p>
     </section>
 
     <!-- Subscribe to calendar -->
@@ -142,8 +153,18 @@ export class Calendar {
     });
   }
 
-  /** Tockify calendar short-name. Null until the parish provides the correct slug. */
-  protected readonly tockifySlug: string | null = null;
+  /** Parish Google Calendar identifier (the Gmail address that owns the
+   *  calendar). The calendar must be set to "Make available to public" for
+   *  the embed and the iCal subscription link to resolve — see
+   *  PHASE8_SETUP.md for the one-time enablement steps. */
+  protected readonly calendarId = 'celestialsanctumparish@gmail.com';
+
+  /** Click-to-subscribe deep link. Adding a Google Calendar by URL prompts
+   *  the user to confirm in their Google account; Apple Calendar and
+   *  Outlook on macOS recognize the webcal:// equivalent. We hand out the
+   *  Google flavor since that's what most parish visitors will recognize. */
+  protected readonly addToCalendarHref =
+    `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(this.calendarId)}`;
 
   protected readonly weekly: RecurringService[] = [
     {
