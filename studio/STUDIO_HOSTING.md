@@ -1,5 +1,11 @@
 # Hosting the Studio at `admin.celestialsanctumparish.org`
 
+> ⏳ **Blocked on the apex DNS cutover.** Steps 2 and 3 below can only
+> land once `celestialsanctumparish.org` itself points at Vercel — see
+> the full sequence in [`../PHASE8_SETUP.md`](../PHASE8_SETUP.md). Step 1
+> (create the Vercel project) can run today; the project will simply
+> sit at `celestial-sanctum-studio.vercel.app` until DNS is ready.
+
 The Sanity-hosted Studio (`celestial-sanctum.sanity.studio`) only allows
 `*.sanity.studio` URLs. To put the Studio under the parish's own domain we
 self-host it as a separate Vercel project pointing at this `studio/`
