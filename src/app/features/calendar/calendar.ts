@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { SanctumButton } from '../../shared/ui/button';
 import { SeoService } from '../../core/seo/seo.service';
+import { CalendarService } from '../../core/calendar/calendar.service';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
-import { GoogleCalendarEmbed } from '../../shared/embeds/google-calendar-embed';
+import { SanctumAgenda } from '../../shared/calendar/agenda';
 import { SanctumReveal } from '../../core/motion/reveal.directive';
 import { SanctumCascade } from '../../core/motion/cascade.directive';
 import { SanctumDrawIn } from '../../core/motion/draw-in.directive';
@@ -20,7 +22,7 @@ interface RecurringService {
   selector: 'sanctum-calendar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Display, Eyebrow, SanctumButton, SanctumCascade, SanctumDrawIn, SanctumMark, SanctumReveal, GoogleCalendarEmbed],
+  imports: [Display, Eyebrow, SanctumButton, SanctumCascade, SanctumDrawIn, SanctumMark, SanctumReveal, SanctumAgenda],
   template: `
     <!-- Page hero -->
     <section sanctumCascade stagger="spaced" class="pt-24 md:pt-32 pb-12 px-6 max-w-6xl mx-auto">
@@ -97,7 +99,7 @@ interface RecurringService {
       </header>
 
       <div sanctumReveal [delay]="150">
-        <sanctum-google-calendar-embed [calendarId]="calendarId" />
+        <sanctum-agenda [events]="events()" />
       </div>
 
       <p class="mt-6 font-body text-sm text-sanctum-muted text-center">
@@ -145,6 +147,8 @@ interface RecurringService {
 })
 export class Calendar {
   private readonly seo = inject(SeoService);
+  private readonly calendar = inject(CalendarService);
+
   constructor() {
     this.seo.set({
       title: 'Calendar',
@@ -155,8 +159,8 @@ export class Calendar {
 
   /** Parish Google Calendar identifier (the Gmail address that owns the
    *  calendar). The calendar must be set to "Make available to public" for
-   *  the embed and the iCal subscription link to resolve — see
-   *  PHASE8_SETUP.md for the one-time enablement steps. */
+   *  the iCal feed to resolve — see CALENDAR_SETUP.md for the one-time
+   *  enablement steps. */
   protected readonly calendarId = 'celestialsanctumparish@gmail.com';
 
   /** Click-to-subscribe deep link. Adding a Google Calendar by URL prompts
@@ -165,6 +169,12 @@ export class Calendar {
    *  Google flavor since that's what most parish visitors will recognize. */
   protected readonly addToCalendarHref =
     `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(this.calendarId)}`;
+
+  /** Upcoming events stream. The service does the iCal fetch + recurrence
+   *  expansion server-side and ships the parsed list through TransferState,
+   *  so the agenda is part of the prerendered HTML and Lighthouse sees a
+   *  fully populated page from the first response. */
+  protected readonly events = toSignal(this.calendar.events(), { initialValue: null });
 
   protected readonly weekly: RecurringService[] = [
     {

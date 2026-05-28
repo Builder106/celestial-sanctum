@@ -6,6 +6,37 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-05-28 — Drop the Google Calendar iframe for an SSR-parsed agenda #pivot
+
+The iframe embed populated with real events fine, but it dragged
+Google's chrome (gray Today/nav bar, Google Sans typography, blue
+event dots, "Add to Google Calendar" link, "Google Calendar" wordmark)
+across the cross-origin boundary where parish CSS couldn't touch it.
+Customization ceiling was URL params (bgcolor, color, week-start),
+external wrapper styling, and a CSS filter on the iframe element —
+which were enough to make the wrapper look parish-made but couldn't
+restyle anything inside. User read the result as "no custom styling."
+
+Swapped for an iCal-fed agenda. New CalendarService fetches the public
+iCal endpoint (no API key — calendar's `Make available to public`
+toggle is the only auth), parses with ical.js inside the SSR worker,
+expands recurring events for the next ~120 days, ships the next 50
+through TransferState. ical.js is dynamic-imported so the 80KB chunk
+lives in the server bundle only — browsers never download it because
+hydration reads pre-parsed events from the inlined JSON. SanctumAgenda
+renders the list with Cormorant + Inter, sanctum-gold time labels,
+sanctum-blue date eyebrows. Lighthouse sees the agenda on first paint;
+no client fetch, no iframe load.
+
+Caught a real bug during the build: my recurring-event expansion was
+capping at MAX_EVENTS=50 per event but counting *past* occurrences
+toward the cap. For a weekly Bible class that started in 2024, the
+iterator burned all 50 slots on past dates before reaching today, so
+the agenda came out empty for every recurring series. Fix: skip past
+occurrences in the loop without counting them, and add a separate
+WALK_CAP iteration ceiling as backstop. After the fix, the prerender
+shows 50 events across 11 distinct series.
+
 ## 2026-05-28 — Migrate /calendar from Tockify to Google Calendar #pivot
 
 Tockify was the live site's calendar embed but the slug never resolved

@@ -32,6 +32,7 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "express": "^5.1.0",
+    "ical.js": "^2.2.1",
     "motion": "^12.40.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
