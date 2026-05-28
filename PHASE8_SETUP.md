@@ -78,6 +78,27 @@ allowed (it should already be from Phase 5):
 These don't need credentials — the public site reads from the Sanity
 CDN, which is open.
 
+### Studio host registration (one extra click per URL)
+
+The first time you open the self-hosted Studio at a new hostname,
+Sanity shows a **"Connect this studio to your project"** interstitial
+with two options:
+
+- **Register studio** — the right choice for production. Adds the URL
+  to the project's registered Studios, enables schema syncing, and
+  unlocks Sanity Dashboard + Content Agent.
+- **Add development host** — lighter-weight, for previews and
+  localhost. Doesn't register the Studio or sync the schema.
+
+This is **per-hostname**, so you'll see it twice:
+1. Once at `celestial-sanctum-studio.vercel.app` (the Vercel default).
+2. Once at `admin.celestialsanctumparish.org` after the custom domain
+   resolves.
+
+Click **Register studio** both times. The Vercel default registration
+is fine to leave in place even after the custom domain is live — it
+acts as a fallback if DNS misbehaves.
+
 ## Step 4 — Smoke test
 
 1. `curl -I https://celestialsanctumparish.org` → expect `HTTP/2 200`
