@@ -60,10 +60,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const apiKey = process.env.BREVO_API_KEY;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL;
-  const senderName = process.env.BREVO_SENDER_NAME ?? 'Celestial Sanctum Parish';
-  const recipient = process.env.CONTACT_RECIPIENT ?? 'celestialsanctumparish@gmail.com';
+  const apiKey = process.env['BREVO_API_KEY'];
+  const senderEmail = process.env['BREVO_SENDER_EMAIL'];
+  const senderName = process.env['BREVO_SENDER_NAME'] ?? 'Celestial Sanctum Parish';
+  const recipient = process.env['CONTACT_RECIPIENT'] ?? 'celestialsanctumparish@gmail.com';
 
   if (!apiKey || !senderEmail) {
     // Surface as 500 so the form's error state triggers; the parish phone

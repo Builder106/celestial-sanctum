@@ -36,8 +36,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const apiKey = process.env.BREVO_API_KEY;
-  const listIdRaw = process.env.BREVO_NEWSLETTER_LIST_ID;
+  const apiKey = process.env['BREVO_API_KEY'];
+  const listIdRaw = process.env['BREVO_NEWSLETTER_LIST_ID'];
   const listId = listIdRaw ? Number(listIdRaw) : NaN;
 
   if (!apiKey || !Number.isInteger(listId)) {

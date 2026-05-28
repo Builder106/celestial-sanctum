@@ -41,7 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     // Optional HMAC verification. Sanity sends a header like
     // `sanity-webhook-signature: t=1716500000,v1=<hex>` where `v1` is
     // HMAC-SHA256(`${t}.${rawBody}`) using the shared secret.
-    const secret = process.env.SANITY_WEBHOOK_SECRET;
+    const secret = process.env['SANITY_WEBHOOK_SECRET'];
     if (secret) {
       const sig = req.headers['sanity-webhook-signature'];
       if (typeof sig !== 'string') {
@@ -65,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
       }
     }
 
-    const token = process.env.GITHUB_PUBLISH_TOKEN;
+    const token = process.env['GITHUB_PUBLISH_TOKEN'];
     if (!token) {
       console.error('[sanity-publish-hook] GITHUB_PUBLISH_TOKEN not set');
       res.status(500).json({ error: 'GitHub token not configured' });
