@@ -78,7 +78,12 @@ const TIMEZONE = 'America/Los_Angeles';
           </p>
         </div>
       } @else {
-        <ul class="divide-y divide-sanctum-rule">
+        <!-- Constrained height + overflow-y-auto so the agenda scrolls
+             within the card rather than pushing the rest of the page
+             down. Matches the prior iframe embed's behavior (Google's
+             iframe was a fixed 720px box). The height tracks viewport
+             on small screens so phones don't get an oversized card. -->
+        <ul class="divide-y divide-sanctum-rule max-h-[60vh] md:max-h-[720px] overflow-y-auto">
           @for (day of days(); track day.isoDate) {
             <li class="flex gap-5 md:gap-8 px-5 md:px-7 py-5 md:py-6">
               <!-- Date column. Day number in display serif, weekday/month
