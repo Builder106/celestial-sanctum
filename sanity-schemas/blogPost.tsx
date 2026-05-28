@@ -58,6 +58,22 @@ export const blogPost = defineType({
     { title: 'Publish date, newest first', name: 'publishDateDesc', by: [{ field: 'publishDate', direction: 'desc' }] },
   ],
   preview: {
-    select: { title: 'title', subtitle: 'displayDate', media: 'imageUrl' },
+    select: { title: 'title', subtitle: 'displayDate', imageUrl: 'imageUrl' },
+    prepare({ title, subtitle, imageUrl }) {
+      // imageUrl is a `url` string, not a Sanity asset reference. Wrap it
+      // in an <img> so the preview slot renders an actual thumbnail rather
+      // than dropping the raw URL into the media box as truncated text.
+      return {
+        title,
+        subtitle,
+        media: imageUrl ? (
+          <img
+            src={imageUrl}
+            alt=""
+            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+          />
+        ) : undefined,
+      };
+    },
   },
 });
