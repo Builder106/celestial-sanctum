@@ -2,16 +2,20 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 
 /**
  * The Sanctum Mark — the official Celestial Church of Christ seal.
- * Renders the SVG asset at `/img/cccIcon.svg` (the vectorized parish seal:
- * curved title text, rainbow, eye, crown, cross). Used as section dividers
- * and ornaments across the site.
  *
- * Tone variants apply CSS filters to recolor the seal for different
- * backgrounds. The default tone is the seal's natural multicolor; light is
- * for burgundy / dark grounds; mono-gold and mono-ink are accent variants.
- * Filter chains use the standard brightness(0)+saturate+invert+sepia+
- * hue-rotate pattern that converts any multicolor source to a single
- * target hex.
+ * Each tone has its own pre-colored SVG under `/img/cccIcon-<tone>.svg`
+ * (default keeps the multicolor canonical version at `cccIcon.svg`). We
+ * pick the right file per tone rather than recoloring at render time
+ * with CSS filters — filters can only collapse the whole seal into a
+ * single hue, which destroys the contrast between the outline, the
+ * rainbow, and the inner detail. Per-tone SVGs let each variant keep
+ * proper outline/body contrast and let the .punch overlays (eye lashes,
+ * pupil, crown center, title letter holes) read as actual transparent
+ * holes against any background.
+ *
+ * To add a new tone: extend the union, drop a matching
+ * `cccIcon-<tone>.svg` in public/img/, and add it to the SVG_BY_TONE
+ * map. See the variant generator note in public/img/.
  */
 @Component({
   selector: 'sanctum-mark',
@@ -19,13 +23,12 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <img
-      src="/img/cccIcon.svg"
+      [src]="src()"
       alt=""
       [attr.width]="size()"
       [attr.height]="size()"
       [style.width.px]="size()"
       [style.height.px]="size()"
-      [style.filter]="filter()"
       decoding="async"
       loading="lazy"
     />
@@ -35,33 +38,18 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
       display: inline-flex;
       line-height: 0;
     }
-    img {
-      transition: filter 0.2s ease;
-    }
   `,
 })
 export class SanctumMark {
   readonly size = input<number>(60);
   readonly tone = input<'default' | 'light' | 'mono-gold' | 'mono-ink'>('default');
 
-  // Each filter recolors the entire multicolor seal to a single tone. The
-  // values were computed by running the parish brand colors through the
-  // standard CSS-filter color-converter algorithm (brightness/invert/
-  // sepia/saturate/hue-rotate chain).
-  protected readonly filter = computed(() => {
-    switch (this.tone()) {
-      case 'light':
-        // Recolors everything to near-cream-white (~#FBF8F1).
-        return 'brightness(0) invert(1)';
-      case 'mono-gold':
-        // Recolors everything to sanctum-gold (~#B89253).
-        return 'brightness(0) saturate(100%) invert(58%) sepia(45%) saturate(573%) hue-rotate(2deg) brightness(95%) contrast(80%)';
-      case 'mono-ink':
-        // Recolors everything to sanctum-ink (~#1A1612).
-        return 'brightness(0) saturate(0)';
-      case 'default':
-      default:
-        return 'none';
-    }
-  });
+  private static readonly SVG_BY_TONE = {
+    'default': '/img/cccIcon.svg',
+    'light': '/img/cccIcon-light.svg',
+    'mono-gold': '/img/cccIcon-mono-gold.svg',
+    'mono-ink': '/img/cccIcon-mono-ink.svg',
+  } as const;
+
+  protected readonly src = computed(() => SanctumMark.SVG_BY_TONE[this.tone()]);
 }
