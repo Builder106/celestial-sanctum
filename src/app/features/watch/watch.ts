@@ -11,7 +11,9 @@ import { Icon } from '../../shared/ui/icon';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
 import { SpotifyEmbed } from '../../shared/embeds/spotify-embed';
 import { YouTubeEmbed } from '../../shared/embeds/youtube-embed';
+import { SanctumYouTubeFeed } from '../../shared/youtube/feed';
 import { SanityService } from '../../core/sanity/sanity.service';
+import { YouTubeService } from '../../core/youtube/youtube.service';
 import type { BlogPost } from '../../core/sanity/sanity.types';
 import { SeoService } from '../../core/seo/seo.service';
 
@@ -69,7 +71,7 @@ const FALLBACK_POSTS: BlogPost[] = [
   selector: 'sanctum-watch',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [BlogCard, Display, Eyebrow, Icon, SanctumButton, SanctumCascade, SanctumDrawIn, SanctumMark, SanctumReveal, SpotifyEmbed, YouTubeEmbed],
+  imports: [BlogCard, Display, Eyebrow, Icon, SanctumButton, SanctumCascade, SanctumDrawIn, SanctumMark, SanctumReveal, SanctumYouTubeFeed, SpotifyEmbed, YouTubeEmbed],
   template: `
     <!-- Page hero -->
     <section sanctumCascade stagger="spaced" class="pt-24 md:pt-32 pb-12 px-6 max-w-6xl mx-auto">
@@ -158,11 +160,49 @@ const FALLBACK_POSTS: BlogPost[] = [
         <a
           sanctumBtn
           variant="ghost"
-          href="https://youtube.com/user/cccSanctumParish"
+          href="https://www.youtube.com/@cccSanctumParish"
           target="_blank"
           rel="noopener noreferrer"
         >
           Subscribe on YouTube
+        </a>
+      </div>
+    </section>
+
+    <div sanctumReveal distance="whisper" class="flex justify-center py-16 md:py-20">
+      <sanctum-mark [size]="56" />
+    </div>
+
+    <!-- Recent videos from the parish channel -->
+    <section id="videos" class="scroll-mt-28 py-12 md:py-16 px-6 max-w-6xl mx-auto">
+      <header sanctumReveal class="mb-10 md:mb-12 max-w-2xl">
+        <sanctum-eyebrow class="mb-4">Recent uploads</sanctum-eyebrow>
+        <sanctum-display size="lg" class="mb-5">
+          <h2>
+            Sermons, classes,
+            <span class="italic text-sanctum-burgundy">&amp; vigils.</span>
+          </h2>
+        </sanctum-display>
+        <p class="font-body text-base md:text-lg text-sanctum-muted leading-relaxed">
+          The latest videos posted to the parish YouTube channel — Sunday
+          sermons, Bible class recordings, and the occasional vigil. Each
+          card opens on YouTube.
+        </p>
+      </header>
+
+      <div sanctumReveal [delay]="150">
+        <sanctum-youtube-feed [videos]="videos()" />
+      </div>
+
+      <div sanctumReveal [delay]="250" class="mt-10 md:mt-12 flex justify-center">
+        <a
+          sanctumBtn
+          variant="ghost"
+          href="https://www.youtube.com/@cccSanctumParish/videos"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          All videos on YouTube
         </a>
       </div>
     </section>
@@ -282,12 +322,13 @@ const FALLBACK_POSTS: BlogPost[] = [
 })
 export class Watch {
   private readonly sanity = inject(SanityService);
+  private readonly youtube = inject(YouTubeService);
   private readonly cmsPosts = toSignal(this.sanity.blogPosts(), { initialValue: null });
   private readonly seo = inject(SeoService);
   constructor() {
     this.seo.set({
       title: 'Watch & Listen',
-      description: 'Celestial Sanctum Parish online — 24/7 livestream of CCC hymns, the Sanctum Podcast on Spotify, and long-form devotional writing.',
+      description: 'Celestial Sanctum Parish online — 24/7 livestream of CCC hymns, the Sanctum Podcast on Spotify, recent uploads from the parish YouTube channel, and long-form devotional writing.',
       path: '/watch',
     });
   }
@@ -297,6 +338,11 @@ export class Watch {
     if (!fromCms || fromCms.length === 0) return FALLBACK_POSTS;
     return fromCms;
   });
+
+  /** Recent uploads from the parish YouTube channel. SSR-fetched from the
+   *  public RSS feed via YouTubeService; null while loading or on fetch
+   *  failure. */
+  protected readonly videos = toSignal(this.youtube.videos(), { initialValue: null });
   protected readonly featuredPost = computed(() => this.posts()[0]);
   protected readonly remainingPosts = computed(() => this.posts().slice(1));
 

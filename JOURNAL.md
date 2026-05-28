@@ -6,6 +6,24 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-05-28 — Embed the parish YouTube channel feed on /watch #milestone
+
+Parish asked for their @cccSanctumParish channel feed embedded on the
+Watch & Listen page. Resolved the handle to channel ID
+UCJJ7ccMcbuv-1LIxBuVCg0w by curling the channel page with a browser
+User-Agent (YouTube serves a 0-byte body to vanilla curl). Same
+SSR-parse pattern as the new calendar agenda: fetch the public RSS
+endpoint at SSR time, parse with a tiny inline regex parser (eight
+fields, stable Atom schema — no XML dep needed), ship the top 9
+through TransferState. SanctumYouTubeFeed renders a 3-col grid of
+cards with thumbnails, Cormorant titles, gold relative-date eyebrows,
+and a burgundy hover play affordance. Each card opens YouTube in a
+new tab — deliberately not embedded iframes per-card since that's
+9× third-party iframes which would tank Lighthouse Best Practices.
+Slots between the 24/7 livestream section and the blog list. Verified
+in the prerendered HTML: 9 video titles, 9 distinct hqdefault.jpg
+thumbnail URLs, TransferState payload present.
+
 ## 2026-05-28 — Drop the Google Calendar iframe for an SSR-parsed agenda #pivot
 
 The iframe embed populated with real events fine, but it dragged
