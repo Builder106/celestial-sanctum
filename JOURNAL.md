@@ -6,6 +6,25 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-05-28 — Sanity → relay → descriptive Vercel deploy is live #milestone #incident
+
+End-to-end CMS-publish-to-deploy is verified working. The Vercel
+deployment list now shows `CMS: published csHomepage/homepage` as a real
+Production build, distinct from the surrounding code commits — so future
+parish edits in Sanity Studio will leave a legible audit trail in
+`git log` and in the Vercel dashboard. Two real bugs surfaced during the
+build: (1) every `api/` function was crashing with
+`FUNCTION_INVOCATION_FAILED` because `tsconfig.json` has
+`"module": "preserve"` (emits ES `import` syntax in compiled `.js`) but
+`package.json` had no `"type": "module"`, so Node treated the output as
+CommonJS and threw `SyntaxError`. Fixed by adding `type: module`. (2)
+HMAC validation against Sanity's `sanity-webhook-signature` header was
+permanently 401-ing because Vercel's `@vercel/node` auto-parses JSON
+bodies before the handler — `JSON.stringify(req.body)` can't reproduce
+the exact bytes Sanity signed. Swapped for a static `X-Webhook-Secret`
+header check with constant-time compare. Same security posture (random
+POSTs get rejected), no body-reconstruction problem.
+
 ## 2026-05-23 — Lighthouse 100s across six of seven routes #milestone
 
 Phase 7 wrapped with verified Lighthouse scores via Chrome DevTools MCP:
