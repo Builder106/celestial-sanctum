@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { SanctumMark } from '../ui/sanctum-mark';
 
 /**
  * Renders the parish's public Google Calendar as an iframe embed.
@@ -12,17 +13,20 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
  * Visual integration with the parish aesthetic happens via:
  *
  * 1. URL parameters Google honors — `bgcolor` pins the iframe background
- *    to sanctum-cream (#FBF8F1) so it blends with the page, `color`
- *    pushes event accent dots to sanctum-blue (#1E3A5F), `wkst=1`
- *    starts the week on Sunday (Christian-week default).
- * 2. A parish-styled wrapper — gold hairline frame, cream tint, generous
- *    inner padding. The iframe sits *inside* the frame so Google's gray
- *    top chrome is visually contained by parish chrome on the outside.
- * 3. A cream-colored band overlaid at the bottom of the iframe to mask
- *    Google's "Add to Google Calendar" link and the "Google Calendar"
+ *    to sanctum-cream (#FBF8F1), `color` pushes event accent dots to
+ *    sanctum-blue (#1E3A5F), `wkst=1` starts the week on Sunday.
+ * 2. A paper-white card wrapper with a real gold-hairline header strip:
+ *    Sanctum mark + "Parish events" eyebrow + timezone label. Sits on
+ *    the cream page with a subtle drop shadow so it reads as a
+ *    cathedral-card containing Google's chrome, not a Google embed
+ *    sitting on parish chrome.
+ * 3. A 36px cream band overlaid at the bottom of the iframe masking
+ *    Google's duplicate "Add to Google Calendar" link + "Google Calendar"
  *    wordmark. We replicate the subscription affordance with our own
- *    styled link on the consuming page, so the masked elements would
- *    just be duplication; the iframe itself remains fully functional.
+ *    styled link on the consuming page.
+ * 4. A gentle `sepia + saturate` filter on the iframe to warm Google's
+ *    cool blue UI chrome closer to the parish palette without distorting
+ *    text legibility.
  *
  * Defaults to AGENDA mode because the parish uses this surface for
  * one-off events (harvests, baptisms, choir releases, special vigils)
@@ -34,35 +38,43 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
   selector: 'sanctum-google-calendar-embed',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [SanctumMark],
   template: `
-    <figure class="w-full bg-sanctum-cream border border-sanctum-gold/40 rounded-sm overflow-hidden">
-      <!-- Eyebrow inside the frame so Google's gray top bar reads as the
-           second tier of chrome rather than a foreign UI dropping in. -->
+    <figure
+      class="w-full bg-sanctum-paper border border-sanctum-gold/60 rounded-sm overflow-hidden shadow-[0_6px_24px_-12px_rgba(26,22,18,0.18)]"
+    >
+      <!-- Parish header strip — Sanctum mark on the left, eyebrow centered
+           or aligned, timezone label on the right. Reads as cathedral
+           chrome wrapping Google's gray controls. -->
       <figcaption
-        class="flex items-center justify-between px-5 md:px-6 py-3 bg-sanctum-paper border-b border-sanctum-rule"
+        class="flex items-center gap-4 px-5 md:px-7 py-4 bg-sanctum-cream border-b border-sanctum-gold/50"
       >
-        <span class="font-body text-[11px] uppercase tracking-[0.3em] text-sanctum-blue font-semibold">
+        <sanctum-mark [size]="32" tone="default" />
+        <span
+          class="flex-1 font-body text-xs md:text-sm uppercase tracking-[0.35em] text-sanctum-blue font-semibold"
+        >
           Parish events
         </span>
-        <span class="font-body text-xs text-sanctum-muted hidden sm:inline">
+        <span class="font-body text-xs text-sanctum-muted whitespace-nowrap">
           {{ timezoneLabel() }}
         </span>
       </figcaption>
 
-      <div class="relative">
+      <div class="relative bg-sanctum-cream">
         <iframe
           [src]="embedUrl()"
           [title]="title()"
           [style.height.px]="height()"
           class="w-full block border-0 bg-sanctum-cream"
+          style="filter: sepia(0.08) saturate(0.9) hue-rotate(-4deg);"
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade"
         ></iframe>
         <!-- Mask Google's bottom branding strip ("Google Calendar" wordmark
              + "Add to Google Calendar" link) with a cream band. The iframe
              retains every scroll/navigation control above this strip. We
-             ship our own styled subscribe link on the consuming page so the
-             affordance isn't lost. -->
+             ship our own styled subscribe link on the consuming page so
+             the affordance isn't lost. -->
         <div
           class="absolute inset-x-0 bottom-0 h-9 bg-sanctum-cream pointer-events-none"
           aria-hidden="true"
@@ -79,7 +91,7 @@ export class GoogleCalendarEmbed {
   /** Initial view. AGENDA is mobile-friendly; MONTH is the desktop default. */
   readonly mode = input<'AGENDA' | 'MONTH' | 'WEEK'>('AGENDA');
   /** Pixel height of the iframe before the bottom-strip mask. Pick a value
-   *  ~30px taller than what you actually want visible — the mask covers
+   *  ~36px taller than what you actually want visible — the mask covers
    *  the bottom 36px to hide Google's branding strip. */
   readonly height = input<number>(760);
   /** Accessible label for the iframe. */
@@ -122,7 +134,6 @@ export class GoogleCalendarEmbed {
     if (tz === 'America/Denver') return 'Mountain Time';
     if (tz === 'America/Chicago') return 'Central Time';
     if (tz === 'America/New_York') return 'Eastern Time';
-    // Fallback: strip the continent and humanize the city name.
     return tz.split('/').pop()?.replace(/_/g, ' ') ?? tz;
   });
 }
