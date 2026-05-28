@@ -6,6 +6,25 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-05-28 — Self-host Sanity Studio for parish-branded admin URL #decision
+
+The default Sanity-hosted Studio lives at `celestial-sanctum.sanity.studio`,
+which is fine but reads as a developer tool to a parish admin. Asked
+"abstract Sanity away and build a custom admin UI on the church site?"
+and the answer was no — reimplementing rich-text editing, image cropping,
+draft/publish, revision history, role auth and asset management for
+visual coherence alone is many weeks of work that nobody would notice.
+Middle path: keep Sanity Studio, rebrand it (parish title, CCC seal,
+cream/ink/blue/gold theme tokens, structure that pins singletons), and
+self-host on Vercel under `admin.celestialsanctumparish.org`. Sanity's
+managed hosting is locked to `*.sanity.studio` so the custom domain
+requires self-hosting either way — turned that constraint into the
+catalyst for the rebrand. Studio code now in `studio/` builds a static
+SPA via `sanity build`; a second Vercel project (`celestial-sanctum-studio`,
+root dir `studio/`) will own the admin domain. DNS for
+`celestialsanctumparish.org` is still pending so this lands once
+registrar access is in hand.
+
 ## 2026-05-28 — Sanity → relay → descriptive Vercel deploy is live #milestone #incident
 
 End-to-end CMS-publish-to-deploy is verified working. The Vercel
