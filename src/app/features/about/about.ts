@@ -195,24 +195,56 @@ const FALLBACK: AboutSection[] = [
               </dl>
             }
 
-            <!-- Canonical-source link, gated to the Doctrine section so it
+            <!-- Canonical-source card, gated to the Doctrine section so it
                  reads as a "read the full thing" affordance attached to
                  the parish's belief summary. The PDF is the official 1980
                  deed of constitution of the Celestial Church of Christ. -->
             @if (section.id === 'doctrine') {
-              <p class="mt-12 font-body text-base md:text-lg text-sanctum-ink/85 leading-[1.75]">
-                The parish's doctrine flows from the wider denomination's
-                governing document.
-                <a
-                  href="/ccc_constitution.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-sanctum-blue underline decoration-sanctum-gold/60 underline-offset-4 hover:decoration-sanctum-gold whitespace-nowrap"
-                >
-                  Read the full CCC Constitution (PDF, 66 pages)
-                  <sanctum-icon name="arrow-up-right" [size]="14" class="inline-block ml-1 align-[-2px]" />
-                </a>
-              </p>
+              <aside
+                class="mt-14 md:mt-16 bg-sanctum-paper border border-sanctum-gold/60 rounded-sm p-7 md:p-9 shadow-[0_6px_24px_-12px_rgba(26,22,18,0.18)]"
+              >
+                <div class="flex flex-col md:flex-row md:items-start gap-6 md:gap-8">
+                  <sanctum-mark [size]="64" tone="default" class="shrink-0" />
+                  <div class="flex-1 min-w-0">
+                    <p
+                      class="font-body text-[11px] md:text-xs uppercase tracking-[0.3em] text-sanctum-blue font-semibold mb-3"
+                    >
+                      Canonical source
+                    </p>
+                    <h3
+                      class="font-display text-2xl md:text-3xl text-sanctum-ink leading-[1.15] mb-3 tracking-[-0.01em]"
+                    >
+                      The CCC Deed of
+                      <span class="italic text-sanctum-burgundy">Constitution.</span>
+                    </h3>
+                    <p
+                      class="font-body text-base md:text-lg text-sanctum-ink/85 leading-[1.7] mb-6 max-w-xl"
+                    >
+                      The full governing document of the Celestial Church of Christ —
+                      foundation history, tenets, mode of worship, sacraments, structure,
+                      and ranks. Promulgated 29 March 1980.
+                    </p>
+                    <a
+                      sanctumBtn
+                      variant="primary"
+                      size="md"
+                      href="/ccc_constitution.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Read the Constitution
+                      <sanctum-icon
+                        name="arrow-up-right"
+                        [size]="16"
+                        class="inline-block ml-2 align-[-3px]"
+                      />
+                    </a>
+                    <p class="mt-3 font-body text-xs text-sanctum-muted">
+                      PDF · 66 pages · opens in a new tab
+                    </p>
+                  </div>
+                </div>
+              </aside>
             }
           </section>
         }
