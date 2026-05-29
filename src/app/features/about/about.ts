@@ -4,6 +4,7 @@ import { AnchorItem, AnchorNav } from '../../shared/ui/anchor-nav';
 import { SanctumButton } from '../../shared/ui/button';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
+import { Icon } from '../../shared/ui/icon';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
 import { SanctumReveal } from '../../core/motion/reveal.directive';
 import { SanctumCascade } from '../../core/motion/cascade.directive';
@@ -122,7 +123,7 @@ const FALLBACK: AboutSection[] = [
   selector: 'sanctum-about',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AnchorNav, Display, Eyebrow, SanctumButton, SanctumCascade, SanctumCiteRule, SanctumDrawIn, SanctumMark, SanctumReveal],
+  imports: [AnchorNav, Display, Eyebrow, Icon, SanctumButton, SanctumCascade, SanctumCiteRule, SanctumDrawIn, SanctumMark, SanctumReveal],
   template: `
     <!-- Page hero (compact) -->
     <section sanctumCascade stagger="spaced" class="pt-24 md:pt-32 pb-12 px-6 max-w-6xl mx-auto">
@@ -192,6 +193,26 @@ const FALLBACK: AboutSection[] = [
                   </div>
                 }
               </dl>
+            }
+
+            <!-- Canonical-source link, gated to the Doctrine section so it
+                 reads as a "read the full thing" affordance attached to
+                 the parish's belief summary. The PDF is the official 1980
+                 deed of constitution of the Celestial Church of Christ. -->
+            @if (section.id === 'doctrine') {
+              <p class="mt-12 font-body text-base md:text-lg text-sanctum-ink/85 leading-[1.75]">
+                The parish's doctrine flows from the wider denomination's
+                governing document.
+                <a
+                  href="/ccc_constitution.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-sanctum-blue underline decoration-sanctum-gold/60 underline-offset-4 hover:decoration-sanctum-gold whitespace-nowrap"
+                >
+                  Read the full CCC Constitution (PDF, 66 pages)
+                  <sanctum-icon name="arrow-up-right" [size]="14" class="inline-block ml-1 align-[-2px]" />
+                </a>
+              </p>
             }
           </section>
         }

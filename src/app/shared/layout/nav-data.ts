@@ -24,7 +24,7 @@ export const FOOTER_RESOURCES: readonly NavItem[] = [
   { label: 'Podcast', path: '/watch#podcast' },
   { label: 'Blog', path: '/watch#blog' },
   { label: 'News', path: '/watch#news' },
-  { label: 'Constitution', path: '/about#doctrine' },
+  { label: 'CCC Constitution (PDF)', path: '/ccc_constitution.pdf' },
 ];
 
 export const FOOTER_CONTACT = {
