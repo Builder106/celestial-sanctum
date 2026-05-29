@@ -222,20 +222,70 @@ interface ComingShow {
             </p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-3xl mx-auto">
-            @for (show of comingSoon; track show.title) {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
+            @for (show of comingSoon; track show.title; let i = $index) {
+              <!-- Inverted dark card on the light section so the previews
+                   pop against the surrounding canvas. Decorative numeric
+                   watermark sits in the corner; refined status pill with
+                   a pulsing indicator dot reads as "in development" rather
+                   than generic marketing chrome. Hover lifts the card and
+                   pushes the arrow chevron to suggest forthcoming
+                   discovery. -->
               <article
-                class="bg-white rounded-2xl p-8 border-t-4 border-czm-blue shadow-[0_4px_24px_-12px_rgba(11,26,46,0.15)]"
+                class="group relative overflow-hidden rounded-2xl bg-czm-navy text-white p-7 md:p-9 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_48px_-20px_rgba(11,26,46,0.5)]"
               >
+                <!-- Soft electric-blue glow that brightens on hover -->
+                <div
+                  class="absolute -right-24 -top-24 w-64 h-64 rounded-full bg-[#3BA0E8]/15 blur-3xl pointer-events-none transition-opacity duration-300 group-hover:bg-[#3BA0E8]/25"
+                  aria-hidden="true"
+                ></div>
+
+                <!-- Decorative numeric watermark -->
                 <span
-                  class="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] bg-gradient-to-r from-czm-blue to-czm-blue-bright text-white mb-4"
+                  class="absolute right-6 top-4 font-bold text-[88px] leading-none text-white/[0.04] select-none pointer-events-none tracking-tighter"
+                  aria-hidden="true"
                 >
-                  Coming Soon
+                  {{ '0' + (i + 1) }}
                 </span>
-                <h3 class="text-xl font-bold text-czm-navy mb-3">{{ show.title }}</h3>
-                <p class="text-czm-navy/60 text-[14px] leading-relaxed">
-                  {{ show.description }}
-                </p>
+
+                <div class="relative">
+                  <!-- Status pill: gradient via inline style (Tailwind v4's
+                       gradient utilities need more wiring than is worth
+                       declaring for one chip), plus a pulsing dot. -->
+                  <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[#3BA0E8]/30 mb-6">
+                    <span class="relative flex w-1.5 h-1.5">
+                      <span class="absolute inline-flex w-full h-full rounded-full bg-[#3BA0E8] opacity-70 animate-ping motion-reduce:hidden"></span>
+                      <span class="relative inline-flex w-1.5 h-1.5 rounded-full bg-[#3BA0E8]"></span>
+                    </span>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#5FB8F3]">
+                      In development
+                    </span>
+                  </div>
+
+                  <h3 class="text-2xl font-bold text-white mb-3 leading-tight">
+                    {{ show.title }}
+                  </h3>
+                  <p class="text-white/55 text-[14px] leading-relaxed mb-8 max-w-sm">
+                    {{ show.description }}
+                  </p>
+
+                  <!-- Subtle bottom rule + chevron — communicates that
+                       these cards will eventually become tappable show
+                       links without overpromising clickability today. -->
+                  <div class="flex items-center justify-between pt-5 border-t border-white/8">
+                    <span class="text-[11px] uppercase tracking-[0.25em] text-white/40 font-semibold">
+                      Stay tuned
+                    </span>
+                    <span
+                      class="text-white/40 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[#5FB8F3]"
+                      aria-hidden="true"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
               </article>
             }
           </div>
