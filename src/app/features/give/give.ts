@@ -130,47 +130,39 @@ interface UseOfFunds {
           </button>
         </div>
 
-        @if (paypalUrl()) {
-          <a
-            [href]="paypalUrl()"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="w-full inline-flex items-center justify-center gap-3 px-9 py-5 bg-sanctum-burgundy text-sanctum-cream font-body text-sm font-medium tracking-[0.18em] uppercase hover:bg-sanctum-ink transition-colors"
-          >
-            <sanctum-icon name="heart" [size]="18" />
-            {{ frequency() === 'monthly' ? 'Subscribe via PayPal' : 'Continue to PayPal' }}
-            <sanctum-icon name="arrow-up-right" [size]="14" />
-          </a>
-          <p class="font-body text-xs text-sanctum-muted text-center mt-5 leading-relaxed">
+        <a
+          [href]="paypalUrl()"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="w-full inline-flex items-center justify-center gap-3 px-9 py-5 bg-sanctum-burgundy text-sanctum-cream font-body text-sm font-medium tracking-[0.18em] uppercase hover:bg-sanctum-ink transition-colors"
+        >
+          <sanctum-icon name="heart" [size]="18" />
+          Continue to PayPal
+          <sanctum-icon name="arrow-up-right" [size]="14" />
+        </a>
+
+        <!-- Honest guidance for what visitors actually see on PayPal's
+             checkout page. The parish's hosted donate button shows the
+             amount as $0 until the donor types it (URL-passed amounts
+             aren't honored by this particular button config) and
+             includes a "Make this a monthly donation" checkbox on
+             every checkout. We surface both behaviors in copy rather
+             than pretending the site controls them. -->
+        <div class="mt-5 space-y-3 text-sanctum-muted text-center font-body text-xs leading-relaxed">
+          <p>
+            On PayPal's page,
+            <span class="text-sanctum-ink font-semibold">enter \${{ amountForCopy() }}</span>
+            in the donation amount field
             @if (frequency() === 'monthly') {
-              You'll be redirected to PayPal's secure checkout to start your
-              monthly gift. Cancel anytime in your PayPal account.
+              and
+              <span class="text-sanctum-ink font-semibold">tick "Make this a monthly donation"</span>
+              before continuing.
             } @else {
-              You'll be redirected to PayPal's secure checkout. You can enter any
-              amount you'd like there, regardless of the suggestion above.
+              and leave "Make this a monthly donation" unchecked.
             }
           </p>
-        } @else {
-          <!-- Monthly giving placeholder: shown when the recurring hosted
-               button ID hasn't been provided yet. Routes visitors at the
-               contact form so the parish can set up recurring manually
-               in the interim. -->
-          <a
-            routerLink="/contact"
-            queryParamsHandling="merge"
-            [queryParams]="{ topic: 'Monthly giving' }"
-            class="w-full inline-flex items-center justify-center gap-3 px-9 py-5 border border-sanctum-burgundy text-sanctum-burgundy font-body text-sm font-medium tracking-[0.18em] uppercase hover:bg-sanctum-burgundy hover:text-sanctum-cream transition-colors"
-          >
-            <sanctum-icon name="heart" [size]="18" />
-            Contact us to set up monthly giving
-            <sanctum-icon name="arrow-up-right" [size]="14" />
-          </a>
-          <p class="font-body text-xs text-sanctum-muted text-center mt-5 leading-relaxed">
-            Monthly giving via PayPal is being set up. Until it goes live,
-            email the parish and we'll start a recurring gift with you
-            directly — usually same day.
-          </p>
-        }
+          <p>You can give any amount — the suggestions above are just starting points.</p>
+        </div>
       </div>
     </section>
 
@@ -271,22 +263,19 @@ export class Give {
   }
 
   /**
-   * PayPal hosted button IDs.
+   * Parish's PayPal hosted donate button ID, lifted from the live
+   * celestialsanctumparish.org/give.php. The button supports BOTH
+   * one-time and monthly donations natively — PayPal's checkout shows
+   * a "Make this a monthly donation" checkbox that the donor ticks for
+   * recurring. The frequency toggle on this page is a visitor-intent
+   * signal that drives the help text guiding them through that
+   * checkbox; both tabs route to the same URL.
    *
-   * `oneTime` — the existing "Donate" button on the parish's PayPal
-   * Business account. ID lifted from the live celestialsanctumparish.org
-   * /give.php. Verify periodically (see PAYPAL_SETUP.md → "Verify the
-   * existing donate button").
-   *
-   * `monthly` — a Subscribe button the parish needs to create in PayPal
-   * Business and paste here. Until it's set, the monthly tab on /give
-   * gracefully points visitors at the contact form instead of building
-   * a broken PayPal URL.
+   * If the parish ever creates a dedicated Subscribe button or
+   * reconfigures this one to disable the recurring checkbox, see
+   * PAYPAL_SETUP.md.
    */
-  private readonly paypalButtons = {
-    oneTime: 'XWNJRKDNUUTFU',
-    monthly: null as string | null,
-  };
+  private readonly paypalButtonId = 'XWNJRKDNUUTFU';
 
   protected readonly presetAmounts = [5, 10, 25, 100];
   protected readonly selectedAmount = signal<number | 'custom'>(25);
@@ -294,35 +283,32 @@ export class Give {
 
   private readonly platformId = inject(PLATFORM_ID);
 
-  /** Returns a PayPal checkout URL for the current selection, or null when
-   *  the recurring button hasn't been provisioned yet (the template then
-   *  swaps in a contact-the-parish CTA). */
-  protected readonly paypalUrl = computed<string | null>(() => {
-    const buttonId =
-      this.frequency() === 'monthly'
-        ? this.paypalButtons.monthly
-        : this.paypalButtons.oneTime;
-    if (!buttonId) return null;
+  /** Display string for the selected amount used in the post-CTA copy.
+   *  Custom selection collapses to a generic "an amount you choose"
+   *  since there's no specific number to surface. */
+  protected readonly amountForCopy = computed<string>(() => {
+    const amount = this.selectedAmount();
+    return typeof amount === 'number' ? amount.toString() : 'the amount';
+  });
 
-    // PayPal's modern Donate flow lives at /donate?hosted_button_id=… —
-    // the legacy /cgi-bin/webscr?cmd=_s-xclick form still works but
-    // gets auto-redirected, which strips some query params along the
-    // way (verified: a `return=` URL on the legacy form sometimes
-    // doesn't survive the redirect). Hit the modern endpoint directly.
+  protected readonly paypalUrl = computed<string>(() => {
+    // PayPal's modern Donate flow lives at /donate?hosted_button_id=…
+    // The legacy /cgi-bin/webscr?cmd=_s-xclick form gets auto-redirected
+    // and sometimes drops query params along the way; hit the modern
+    // endpoint directly. Amount is included even though this specific
+    // button doesn't currently honor URL-passed amounts — if the
+    // parish ever reconfigures the button to honor them, it'll start
+    // pre-filling without a code change.
     const params = new URLSearchParams({
-      hosted_button_id: buttonId,
+      hosted_button_id: this.paypalButtonId,
       currency_code: 'USD',
     });
     const amount = this.selectedAmount();
     if (typeof amount === 'number') params.set('amount', amount.toString());
 
-    // Pass a return URL so PayPal lands the donor on /give/thank-you
-    // after a successful payment. PayPal honors this only if the
-    // hosted button is configured to "let merchant specify URL" —
-    // see PAYPAL_SETUP.md. Only emit on the browser since we need an
-    // absolute origin and SSR can't construct one; the prerendered
-    // HTML omits these params and Angular's signal re-evaluation
-    // adds them once the browser hydrates.
+    // Return URL only fires if the parish enables Auto Return on their
+    // PayPal Business account; harmless if not. Only emit on the
+    // browser since SSR can't construct an absolute origin.
     if (isPlatformBrowser(this.platformId)) {
       const origin = window.location.origin;
       params.set('return', `${origin}/give/thank-you`);
