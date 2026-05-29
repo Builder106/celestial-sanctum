@@ -14,7 +14,12 @@ import { PRIMARY_NAV } from './nav-data';
     <header
       class="sticky top-0 left-0 w-full z-40 bg-sanctum-cream/85 backdrop-blur-md border-b border-sanctum-rule"
     >
-      <div class="max-w-6xl mx-auto px-6 md:px-10 py-5 flex justify-between items-center gap-6">
+      <!-- Header row stretches edge-to-edge so the wordmark sits near the
+           viewport's left margin on wide monitors (was previously pinned
+           inside max-w-6xl, which left a big empty gutter on ultrawide).
+           Padding controls inset; the rest of the page still uses
+           max-w-6xl for body content + footer. -->
+      <div class="px-6 md:px-10 py-5 flex justify-between items-center gap-6">
         <a
           routerLink="/"
           class="group flex items-center gap-4 text-sanctum-ink"
