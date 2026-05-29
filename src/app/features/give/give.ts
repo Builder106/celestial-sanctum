@@ -59,45 +59,8 @@ interface UseOfFunds {
 
       <!-- Amount selector -->
       <div sanctumReveal [delay]="150" class="bg-sanctum-paper border border-sanctum-rule rounded-sm p-8 md:p-12 max-w-2xl mx-auto">
-        <!-- Frequency toggle: one-time vs monthly. Recurring is gated on
-             the parish creating a subscription button in their PayPal
-             Business account and providing its hosted_button_id (see
-             PAYPAL_SETUP.md). Until that ID is in place, the "Monthly"
-             tab stays clickable but the CTA gracefully points visitors
-             at the contact form rather than a broken PayPal URL. -->
-        <div class="flex items-center justify-center mb-8">
-          <div class="inline-flex p-1 bg-sanctum-cream border border-sanctum-rule rounded-sm" role="tablist" aria-label="Donation frequency">
-            <button
-              type="button"
-              role="tab"
-              [attr.aria-selected]="frequency() === 'once'"
-              (click)="setFrequency('once')"
-              class="px-5 py-2 font-body text-xs uppercase tracking-[0.2em] font-semibold transition-colors"
-              [class.bg-sanctum-burgundy]="frequency() === 'once'"
-              [class.text-sanctum-cream]="frequency() === 'once'"
-              [class.text-sanctum-muted]="frequency() !== 'once'"
-              [class.hover:text-sanctum-ink]="frequency() !== 'once'"
-            >
-              One-time
-            </button>
-            <button
-              type="button"
-              role="tab"
-              [attr.aria-selected]="frequency() === 'monthly'"
-              (click)="setFrequency('monthly')"
-              class="px-5 py-2 font-body text-xs uppercase tracking-[0.2em] font-semibold transition-colors"
-              [class.bg-sanctum-burgundy]="frequency() === 'monthly'"
-              [class.text-sanctum-cream]="frequency() === 'monthly'"
-              [class.text-sanctum-muted]="frequency() !== 'monthly'"
-              [class.hover:text-sanctum-ink]="frequency() !== 'monthly'"
-            >
-              Monthly
-            </button>
-          </div>
-        </div>
-
         <p class="font-body text-xs uppercase tracking-[0.3em] text-sanctum-blue font-semibold mb-6 text-center">
-          {{ frequency() === 'monthly' ? 'Suggested monthly amount' : 'Suggested amount' }}
+          Suggested amount
         </p>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           @for (amount of presetAmounts; track amount) {
@@ -112,7 +75,7 @@ interface UseOfFunds {
               [class.hover:border-sanctum-gold]="selectedAmount() !== amount"
               (click)="selectAmount(amount)"
             >
-              \${{ amount }}<span class="font-body text-sm font-normal text-current/70 ml-1">{{ frequency() === 'monthly' ? '/mo' : '' }}</span>
+              \${{ amount }}
             </button>
           }
           <button
@@ -141,25 +104,19 @@ interface UseOfFunds {
           <sanctum-icon name="arrow-up-right" [size]="14" />
         </a>
 
-        <!-- Honest guidance for what visitors actually see on PayPal's
-             checkout page. The parish's hosted donate button shows the
-             amount as $0 until the donor types it (URL-passed amounts
-             aren't honored by this particular button config) and
-             includes a "Make this a monthly donation" checkbox on
-             every checkout. We surface both behaviors in copy rather
+        <!-- Honest guidance: PayPal's button shows the amount as $0
+             until the donor types it (URL-passed amounts aren't
+             honored by this button config) and includes a "Make this
+             a monthly donation" checkbox the donor toggles for
+             recurring. We surface both in one line of copy rather
              than pretending the site controls them. -->
-        <div class="mt-5 space-y-3 text-sanctum-muted text-center font-body text-xs leading-relaxed">
+        <div class="mt-5 space-y-2 text-sanctum-muted text-center font-body text-xs leading-relaxed">
           <p>
             On PayPal's page,
             <span class="text-sanctum-ink font-semibold">enter \${{ amountForCopy() }}</span>
-            in the donation amount field
-            @if (frequency() === 'monthly') {
-              and
-              <span class="text-sanctum-ink font-semibold">tick "Make this a monthly donation"</span>
-              before continuing.
-            } @else {
-              and leave "Make this a monthly donation" unchecked.
-            }
+            in the donation amount field. Tick
+            <span class="text-sanctum-ink font-semibold">"Make this a monthly donation"</span>
+            if you'd like recurring giving.
           </p>
           <p>You can give any amount — the suggestions above are just starting points.</p>
         </div>
@@ -264,22 +221,16 @@ export class Give {
 
   /**
    * Parish's PayPal hosted donate button ID, lifted from the live
-   * celestialsanctumparish.org/give.php. The button supports BOTH
-   * one-time and monthly donations natively — PayPal's checkout shows
-   * a "Make this a monthly donation" checkbox that the donor ticks for
-   * recurring. The frequency toggle on this page is a visitor-intent
-   * signal that drives the help text guiding them through that
-   * checkbox; both tabs route to the same URL.
-   *
-   * If the parish ever creates a dedicated Subscribe button or
-   * reconfigures this one to disable the recurring checkbox, see
-   * PAYPAL_SETUP.md.
+   * celestialsanctumparish.org/give.php. The button supports both
+   * one-time and monthly donations natively — PayPal's checkout
+   * shows a "Make this a monthly donation" checkbox the donor toggles
+   * for recurring. See PAYPAL_SETUP.md for the dashboard-side
+   * behaviors we can't override without parish access.
    */
   private readonly paypalButtonId = 'XWNJRKDNUUTFU';
 
   protected readonly presetAmounts = [5, 10, 25, 100];
   protected readonly selectedAmount = signal<number | 'custom'>(25);
-  protected readonly frequency = signal<'once' | 'monthly'>('once');
 
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -320,10 +271,6 @@ export class Give {
 
   protected selectAmount(amount: number | 'custom'): void {
     this.selectedAmount.set(amount);
-  }
-
-  protected setFrequency(value: 'once' | 'monthly'): void {
-    this.frequency.set(value);
   }
 
   protected readonly useOfFunds: UseOfFunds[] = [

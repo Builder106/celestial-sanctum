@@ -9,14 +9,15 @@ that point at it.
 
 - **The donate button supports both one-time and monthly donations
   natively** — PayPal's checkout page includes a "Make this a monthly
-  donation" checkbox the donor ticks if they want recurring.
-- The `/give` page exposes a **One-time / Monthly** toggle that
-  controls the help copy below the CTA. Both tabs route to the same
-  PayPal URL; the copy tells the donor which checkbox state to use
-  when they land on PayPal.
+  donation" checkbox the donor ticks if they want recurring. The site
+  doesn't try to split these into two flows; one CTA, one URL, the
+  donor picks frequency on PayPal.
 - **Suggested amounts** ($5 / $10 / $25 / $100 + Other) render as
   visual anchors. The donor types the amount on PayPal's page — the
   button doesn't currently honor URL-passed `amount=` values.
+- A line of help copy below the CTA names the selected suggestion and
+  tells the donor how to enable recurring on PayPal's page if they
+  want it.
 - `/give/thank-you` exists and the site passes `return` URLs to
   PayPal. They only take effect if Auto Return is enabled on the
   parish's PayPal account (Account Settings → Website Payments →
