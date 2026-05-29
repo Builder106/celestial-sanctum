@@ -21,7 +21,11 @@ export type IconName =
   | 'twitter'
   | 'youtube'
   | 'vimeo'
-  | 'spotify';
+  | 'spotify'
+  | 'apple-music'
+  | 'deezer'
+  | 'audiomack'
+  | 'amazon-music';
 
 @Component({
   selector: 'sanctum-icon',
@@ -127,6 +131,38 @@ export type IconName =
           <path d="M8 14c2.5-1 5.5-1 8 .5" />
           <path d="M8 11c3-1.2 6.5-1 9.5 1" />
           <path d="M8 8c3.5-1 7.5-.5 10 1.5" />
+        }
+        @case ('apple-music') {
+          <!-- Beamed eighth notes — Apple Music's signature mark
+               (stylized double-note with a connecting beam). -->
+          <path d="M9 17V5l12-2v13" />
+          <circle cx="6" cy="17" r="3" fill="currentColor" stroke="none" />
+          <circle cx="18" cy="15" r="3" fill="currentColor" stroke="none" />
+        }
+        @case ('deezer') {
+          <!-- Four-bar equalizer — Deezer's iconic equalizer mark. -->
+          <rect x="3" y="12" width="3" height="8" rx="0.5" fill="currentColor" stroke="none" />
+          <rect x="8" y="8" width="3" height="12" rx="0.5" fill="currentColor" stroke="none" />
+          <rect x="13" y="14" width="3" height="6" rx="0.5" fill="currentColor" stroke="none" />
+          <rect x="18" y="4" width="3" height="16" rx="0.5" fill="currentColor" stroke="none" />
+        }
+        @case ('audiomack') {
+          <!-- Rounded square frame with internal waveform bars — gestures
+               at Audiomack's wave-in-a-card mark. -->
+          <rect x="2" y="2" width="20" height="20" rx="4" />
+          <line x1="6" y1="14" x2="6" y2="10" />
+          <line x1="9" y1="16" x2="9" y2="8" />
+          <line x1="12" y1="15" x2="12" y2="9" />
+          <line x1="15" y1="17" x2="15" y2="7" />
+          <line x1="18" y1="14" x2="18" y2="10" />
+        }
+        @case ('amazon-music') {
+          <!-- Rounded rectangle with a play triangle inside + Amazon's
+               signature smile arc underneath. -->
+          <rect x="3" y="3" width="18" height="13" rx="3" />
+          <polygon points="10,7 14,9.5 10,12" fill="currentColor" stroke="none" />
+          <path d="M5 19.5c4 2.5 10 2.5 14 0" />
+          <polyline points="17 18 19 19.5 17.5 21" />
         }
       }
     </svg>

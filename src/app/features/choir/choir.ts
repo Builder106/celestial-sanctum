@@ -13,8 +13,8 @@ import { SanctumDrawIn } from '../../core/motion/draw-in.directive';
 interface StreamingPlatform {
   label: string;
   url: string;
-  /** Icon component name (sanctum-icon) — falls back to text-only chip if blank. */
-  icon: 'spotify' | 'youtube' | null;
+  /** Brand glyph name from the SanctumIcon set. */
+  icon: 'spotify' | 'apple-music' | 'deezer' | 'audiomack' | 'amazon-music';
   /** Brand color the platform pill picks up on hover. */
   accent: string;
 }
@@ -132,9 +132,7 @@ interface StreamingPlatform {
                   rel="noopener noreferrer"
                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-sm border border-sanctum-rule bg-sanctum-cream/40 text-sanctum-ink hover:border-sanctum-gold hover:bg-sanctum-paper transition-colors font-body text-sm font-semibold"
                 >
-                  @if (p.icon) {
-                    <sanctum-icon [name]="p.icon" [size]="16" class="text-sanctum-muted" />
-                  }
+                  <sanctum-icon [name]="p.icon" [size]="16" class="text-sanctum-muted" />
                   {{ p.label }}
                   <sanctum-icon name="arrow-up-right" [size]="12" class="ml-1 align-[-1px] text-sanctum-muted" />
                 </a>
@@ -205,15 +203,7 @@ interface StreamingPlatform {
             rel="noopener noreferrer"
             class="group flex flex-col items-center justify-center gap-3 p-6 md:p-7 bg-sanctum-paper border border-sanctum-rule rounded-sm transition-all duration-300 hover:border-sanctum-gold hover:-translate-y-0.5"
           >
-            @if (p.icon) {
-              <sanctum-icon [name]="p.icon" [size]="28" class="text-sanctum-muted group-hover:text-sanctum-burgundy transition-colors" />
-            } @else {
-              <span
-                class="inline-flex items-center justify-center w-7 h-7 rounded-full font-body text-[11px] font-bold uppercase tracking-tight text-sanctum-muted group-hover:text-sanctum-burgundy transition-colors border border-sanctum-rule"
-              >
-                {{ p.label.slice(0, 1) }}
-              </span>
-            }
+            <sanctum-icon [name]="p.icon" [size]="28" class="text-sanctum-muted group-hover:text-sanctum-burgundy transition-colors" />
             <span class="font-body text-sm font-semibold text-sanctum-ink text-center leading-tight">
               {{ p.label }}
             </span>
@@ -254,25 +244,25 @@ export class Choir {
     {
       label: 'Apple Music',
       url: 'https://music.apple.com/na/artist/ccc-sanctum-choir/1482043145',
-      icon: null,
+      icon: 'apple-music',
       accent: '#FA243C',
     },
     {
       label: 'Deezer',
       url: 'https://www.deezer.com/us/artist/75640462',
-      icon: null,
+      icon: 'deezer',
       accent: '#A238FF',
     },
     {
       label: 'Audiomack',
       url: 'https://audiomack.com/ccc-sanctum-choir',
-      icon: null,
+      icon: 'audiomack',
       accent: '#FFA200',
     },
     {
       label: 'Amazon Music',
       url: 'https://www.amazon.com/music/player/artists/B07YR4LBX1/ccc-sanctum-choir',
-      icon: null,
+      icon: 'amazon-music',
       accent: '#25D1DA',
     },
   ];
