@@ -4,13 +4,14 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs/operators';
 import { Header } from './shared/layout/header';
 import { Footer } from './shared/layout/footer';
+import { SearchPalette } from './shared/search/search-palette';
 import { routeFade } from './core/motion/route-animations';
 
 @Component({
   selector: 'sanctum-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, Header, Footer],
+  imports: [RouterOutlet, Header, Footer, SearchPalette],
   templateUrl: './app.html',
   styleUrl: './app.css',
   animations: [routeFade],

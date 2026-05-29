@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, HostListener, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Icon } from '../ui/icon';
 import { SanctumMark } from '../ui/sanctum-mark';
+import { SearchService } from '../../core/search/search.service';
 import { PRIMARY_NAV } from './nav-data';
 
 @Component({
@@ -44,24 +45,54 @@ import { PRIMARY_NAV } from './nav-data';
           }
         </nav>
 
-        <a
-          routerLink="/contact"
-          class="hidden lg:inline-flex items-center gap-2 font-body text-xs uppercase tracking-[0.22em] font-semibold text-sanctum-blue hover:text-sanctum-burgundy transition-colors"
-        >
-          Contact
-          <sanctum-icon name="chevron-right" [size]="12" />
-        </a>
+        <div class="hidden lg:flex items-center gap-5">
+          <button
+            type="button"
+            (click)="openSearch()"
+            aria-label="Search the parish (Cmd+K)"
+            class="group inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-sanctum-rule bg-sanctum-paper/60 hover:border-sanctum-gold transition-colors"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" class="text-sanctum-muted group-hover:text-sanctum-ink transition-colors" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <span class="font-body text-[11px] uppercase tracking-[0.22em] font-semibold text-sanctum-muted group-hover:text-sanctum-ink transition-colors">Search</span>
+            <kbd class="font-mono text-[10px] text-sanctum-muted/70 border border-sanctum-rule rounded-sm px-1 py-px ml-1">⌘K</kbd>
+          </button>
 
-        <button
-          type="button"
-          class="lg:hidden p-2 text-sanctum-ink"
-          [attr.aria-expanded]="mobileOpen()"
-          aria-label="Open menu"
-          aria-controls="mobile-menu"
-          (click)="toggleMobile()"
-        >
-          <sanctum-icon [name]="mobileOpen() ? 'close' : 'menu'" [size]="22" />
-        </button>
+          <a
+            routerLink="/contact"
+            class="inline-flex items-center gap-2 font-body text-xs uppercase tracking-[0.22em] font-semibold text-sanctum-blue hover:text-sanctum-burgundy transition-colors"
+          >
+            Contact
+            <sanctum-icon name="chevron-right" [size]="12" />
+          </a>
+        </div>
+
+        <div class="lg:hidden flex items-center gap-1">
+          <button
+            type="button"
+            (click)="openSearch()"
+            class="p-2 text-sanctum-ink"
+            aria-label="Search the parish"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            class="p-2 text-sanctum-ink"
+            [attr.aria-expanded]="mobileOpen()"
+            aria-label="Open menu"
+            aria-controls="mobile-menu"
+            (click)="toggleMobile()"
+          >
+            <sanctum-icon [name]="mobileOpen() ? 'close' : 'menu'" [size]="22" />
+          </button>
+        </div>
       </div>
     </header>
 
@@ -95,6 +126,7 @@ import { PRIMARY_NAV } from './nav-data';
   `,
 })
 export class Header {
+  private readonly search = inject(SearchService);
   protected readonly nav = PRIMARY_NAV;
   protected readonly mobileOpen = signal(false);
 
@@ -104,6 +136,13 @@ export class Header {
 
   protected closeMobile() {
     this.mobileOpen.set(false);
+  }
+
+  /** Opens the global search palette (also reachable via ⌘K). The mobile
+   *  menu closes first so the palette isn't covered by the slide-out. */
+  protected async openSearch(): Promise<void> {
+    this.closeMobile();
+    await this.search.openPalette();
   }
 
   @HostListener('document:keydown.escape')

@@ -7,3 +7,8 @@
 @if (!bareChrome()) {
   <sanctum-footer />
 }
+<!-- Global search palette: lives at the root so ⌘K works on every route
+     (the keyboard listener inside the component is registered on the
+     document). Hidden visually until the palette opens. -->
+<sanctum-search-palette />
+
