@@ -196,6 +196,54 @@ const FALLBACK: AboutSection[] = [
               </dl>
             }
 
+            <!-- Sanctum Choir callout — gated to the Choir section. The
+                 dedicated /choir page expands on the choir's identity,
+                 releases, and platform links. Card chrome mirrors the
+                 Doctrine + CZM cards on this page for consistency, just
+                 with the choir portrait in place of an abstract mark. -->
+            @if (section.id === 'choir') {
+              <aside
+                class="mt-14 md:mt-16 bg-sanctum-paper border border-sanctum-gold/60 rounded-sm overflow-hidden shadow-[0_6px_24px_-12px_rgba(26,22,18,0.18)]"
+              >
+                <div class="flex flex-col md:flex-row md:items-stretch">
+                  <div class="md:w-2/5 shrink-0 bg-sanctum-cream">
+                    <img
+                      src="/img/sanctum-choir.jpg"
+                      alt="The CCC Sanctum Choir in white sutanas and gold sashes."
+                      width="1000"
+                      height="1000"
+                      class="w-full h-full object-cover aspect-square md:aspect-auto"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  <div class="flex-1 p-7 md:p-9">
+                    <p class="font-body text-[11px] md:text-xs uppercase tracking-[0.3em] text-sanctum-blue font-semibold mb-3">
+                      Sanctum Choir
+                    </p>
+                    <h3 class="font-display text-2xl md:text-3xl text-sanctum-ink leading-[1.15] mb-3 tracking-[-0.01em]">
+                      Praises in
+                      <span class="italic text-sanctum-burgundy">Diverse Spaces.</span>
+                    </h3>
+                    <p class="font-body text-base md:text-lg text-sanctum-ink/85 leading-[1.7] mb-6 max-w-xl">
+                      The choir's most recent EP, released March 1, 2024 — and
+                      the official Sanctum Choir presence across Spotify, Apple
+                      Music, Deezer, Audiomack, and Amazon Music.
+                    </p>
+                    <a
+                      sanctumBtn
+                      variant="primary"
+                      size="md"
+                      routerLink="/choir"
+                    >
+                      Visit the choir
+                      <sanctum-icon name="arrow-up-right" [size]="14" class="inline-block ml-2 align-[-2px]" />
+                    </a>
+                  </div>
+                </div>
+              </aside>
+            }
+
             <!-- Celestial Zeitgeist Ministries callout — the parish's
                  youth-led evangelical media ministry. Gated to the
                  Ministries section so it surfaces alongside the other

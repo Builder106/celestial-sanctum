@@ -48,5 +48,9 @@ export const routes: Routes = [
     path: 'czm',
     loadComponent: () => import('./features/czm/czm').then((m) => m.Czm),
   },
+  {
+    path: 'choir',
+    loadComponent: () => import('./features/choir/choir').then((m) => m.Choir),
+  },
   { path: '**', loadComponent: placeholder, title: 'Not Found — Celestial Sanctum Parish' },
 ];
