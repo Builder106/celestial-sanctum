@@ -117,7 +117,7 @@ interface UseOfFunds {
           }
           <button
             type="button"
-            class="py-5 border font-body text-sm uppercase tracking-wider font-medium transition-all duration-300 col-span-2 md:col-span-1"
+            class="py-5 border font-body text-sm uppercase tracking-wider font-medium transition-all duration-300 col-span-2 md:col-span-4"
             [class.border-sanctum-burgundy]="selectedAmount() === 'custom'"
             [class.bg-sanctum-burgundy]="selectedAmount() === 'custom'"
             [class.text-sanctum-cream]="selectedAmount() === 'custom'"
