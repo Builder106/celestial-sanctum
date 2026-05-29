@@ -1,5 +1,9 @@
-<sanctum-header />
+@if (!bareChrome()) {
+  <sanctum-header />
+}
 <main id="main" class="route-host" [@routeFade]="prepareRoute(outlet)">
   <router-outlet #outlet="outlet" />
 </main>
-<sanctum-footer />
+@if (!bareChrome()) {
+  <sanctum-footer />
+}

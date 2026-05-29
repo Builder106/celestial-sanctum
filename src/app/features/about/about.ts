@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
 import { AnchorItem, AnchorNav } from '../../shared/ui/anchor-nav';
 import { SanctumButton } from '../../shared/ui/button';
 import { Display } from '../../shared/ui/display';
@@ -123,7 +124,7 @@ const FALLBACK: AboutSection[] = [
   selector: 'sanctum-about',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [AnchorNav, Display, Eyebrow, Icon, SanctumButton, SanctumCascade, SanctumCiteRule, SanctumDrawIn, SanctumMark, SanctumReveal],
+  imports: [AnchorNav, Display, Eyebrow, Icon, RouterLink, SanctumButton, SanctumCascade, SanctumCiteRule, SanctumDrawIn, SanctumMark, SanctumReveal],
   template: `
     <!-- Page hero (compact) -->
     <section sanctumCascade stagger="spaced" class="pt-24 md:pt-32 pb-12 px-6 max-w-6xl mx-auto">
@@ -193,6 +194,63 @@ const FALLBACK: AboutSection[] = [
                   </div>
                 }
               </dl>
+            }
+
+            <!-- Celestial Zeitgeist Ministries callout — the parish's
+                 youth-led evangelical media ministry. Gated to the
+                 Ministries section so it surfaces alongside the other
+                 ministries instead of competing for attention elsewhere.
+                 Visually echoes the doctrine card pattern but in CZM's
+                 own dark navy / electric blue so visitors get a hint of
+                 the microsite's distinct identity before clicking
+                 through. -->
+            @if (section.id === 'ministries') {
+              <aside
+                class="mt-14 md:mt-16 relative overflow-hidden rounded-sm p-7 md:p-9 bg-[#08111d] text-white shadow-[0_10px_32px_-16px_rgba(11,26,46,0.4)]"
+              >
+                <div
+                  class="absolute right-[-80px] top-[-80px] w-72 h-72 rounded-full bg-[#3BA0E8]/20 blur-3xl pointer-events-none"
+                  aria-hidden="true"
+                ></div>
+                <div class="relative flex flex-col md:flex-row md:items-start gap-6 md:gap-8">
+                  <img
+                    src="/img/czm-logo.png"
+                    alt=""
+                    width="64"
+                    height="64"
+                    class="rounded-full shrink-0 drop-shadow-[0_0_16px_rgba(59,160,232,0.4)]"
+                    decoding="async"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <p
+                      class="font-body text-[11px] md:text-xs uppercase tracking-[0.3em] text-[#3BA0E8] font-semibold mb-3"
+                    >
+                      Youth-led media
+                    </p>
+                    <h3
+                      class="font-display text-2xl md:text-3xl text-white leading-[1.15] mb-3 tracking-[-0.01em]"
+                    >
+                      Celestial Zeitgeist
+                      <span class="italic text-[#3BA0E8]">Ministries.</span>
+                    </h3>
+                    <p
+                      class="font-body text-base md:text-lg text-white/70 leading-[1.7] mb-6 max-w-xl"
+                    >
+                      The parish's youth-led evangelical media ministry —
+                      podcasts, conversations, and video content cutting
+                      through the ideas of the current era to direct focus
+                      to faith in Christ.
+                    </p>
+                    <a
+                      routerLink="/czm"
+                      class="inline-flex items-center gap-2 px-5 py-3 rounded-sm bg-gradient-to-r from-[#3BA0E8] to-[#5FB8F3] text-white font-semibold text-sm hover:shadow-[0_8px_24px_-8px_rgba(59,160,232,0.6)] transition-shadow"
+                    >
+                      Visit CZM
+                      <sanctum-icon name="arrow-up-right" [size]="14" class="inline-block ml-1 align-[-2px]" />
+                    </a>
+                  </div>
+                </div>
+              </aside>
             }
 
             <!-- Canonical-source card, gated to the Doctrine section so it
