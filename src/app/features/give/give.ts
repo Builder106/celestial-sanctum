@@ -304,9 +304,14 @@ export class Give {
         : this.paypalButtons.oneTime;
     if (!buttonId) return null;
 
+    // PayPal's modern Donate flow lives at /donate?hosted_button_id=… —
+    // the legacy /cgi-bin/webscr?cmd=_s-xclick form still works but
+    // gets auto-redirected, which strips some query params along the
+    // way (verified: a `return=` URL on the legacy form sometimes
+    // doesn't survive the redirect). Hit the modern endpoint directly.
     const params = new URLSearchParams({
-      cmd: '_s-xclick',
       hosted_button_id: buttonId,
+      currency_code: 'USD',
     });
     const amount = this.selectedAmount();
     if (typeof amount === 'number') params.set('amount', amount.toString());
@@ -324,7 +329,7 @@ export class Give {
       params.set('cancel_return', `${origin}/give`);
     }
 
-    return `https://www.paypal.com/cgi-bin/webscr?${params.toString()}`;
+    return `https://www.paypal.com/donate?${params.toString()}`;
   });
 
   protected selectAmount(amount: number | 'custom'): void {

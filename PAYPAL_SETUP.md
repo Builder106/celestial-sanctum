@@ -21,6 +21,44 @@ depends on.
   only honors these if the hosted button is configured to "let
   merchant specify URL" — see step 3.
 
+## Step 0 — Clean up the existing donate button's settings
+
+The existing `XWNJRKDNUUTFU` button currently has two quirks that
+surface on PayPal's checkout page and confuse donors:
+
+1. **"Make this a monthly donation" checkbox** appears on every
+   checkout (including when the donor came from the One-time tab).
+   This is because the button was originally created with "accept
+   recurring donations" ticked.
+2. **Pre-selected amount doesn't carry over** — donors who picked
+   `$5` on `/give` land on a PayPal page showing `$0` and have to
+   re-enter the amount. The site DOES pass `&amount=5` in the URL,
+   but PayPal ignores it unless the button allows preset amounts via
+   URL.
+
+Fix both in one visit to PayPal Business:
+
+1. **Pay & Get Paid** → **PayPal buttons** → click the existing
+   `Donate` button (the one whose ID starts with `XWNJRKDNUUTFU`).
+2. Click **Edit button**.
+3. In the **Donation amount** section:
+   - Select **Donors enter their own amount or click a preset
+     amount**, OR
+   - Select **A fixed amount** if you want $5/$10/$25/$100 baked
+     into the button (we'd then drop our URL-level amount param
+     since PayPal would override it).
+   - Easiest path: pick **Donors enter their own amount** and tick
+     **Allow amount to be passed in URL** (or whatever the equivalent
+     option is named in PayPal's UI). That makes `&amount=5` honored.
+4. In **Customize advanced features** → **Show recurring option to
+   donor**: untick this. The dedicated monthly Subscribe button
+   (step 2 below) is the home for recurring donations; donors on the
+   One-time tab shouldn't see the checkbox.
+5. Save. PayPal MAY issue a new `hosted_button_id` after saving
+   (older buttons sometimes do); if so, paste the new ID into
+   [src/app/features/give/give.ts](./src/app/features/give/give.ts)
+   at `paypalButtons.oneTime` and commit.
+
 ## Step 1 — Verify the existing one-time button (one-time, ~5 minutes)
 
 Confirm `XWNJRKDNUUTFU` still routes to the right PayPal account and
