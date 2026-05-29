@@ -107,7 +107,7 @@ The site is broken into nine phases. Phases 0–4 are live in production; Phase 
 - ✅ **Phase 1** — Reverent design system (button directive, eyebrow, hairline, display, card, quote, drop-cap, Sanctum mark, icon set, header, footer)
 - ✅ **Phase 2** — `/visit` + `/about` (long-form with sticky TOC) with verbatim parish content
 - ✅ **Phase 3** — `/watch` (Spotify + YouTube live + recent YouTube uploads feed + 5 real blog posts — [feed setup](./YOUTUBE_SETUP.md))
-- ✅ **Phase 4** — `/calendar` (Google Calendar embed — [parish-side publish setup](./CALENDAR_SETUP.md)) + `/give` (PayPal) + `/contact` (form, awaiting backend)
+- ✅ **Phase 4** — `/calendar` (Google Calendar embed — [parish-side publish setup](./CALENDAR_SETUP.md)) + `/give` (one-time PayPal live, monthly + return URLs blocked on [parish-side PayPal setup](./PAYPAL_SETUP.md)) + `/contact` (form, awaiting backend)
 - ✅ **Phase 5** — Sanity migration (homepage, /about, /visit, /watch blog posts, and site-wide settings all CMS-driven — [see setup](./SANITY_SETUP.md))
 - 🟡 **Phase 6** — Vercel serverless functions for contact + newsletter wired against Brevo ([env-var setup](./PHASE6_SETUP.md)); prayer requests route through the contact form's topic field
 - ✅ **Phase 7** — Per-route SEO + sitemap + robots + llms.txt + Church JSON-LD + legacy `.php` 308 redirects. **Lighthouse 100/100/100/100 on all routes except `/watch` (100/77/100/100 — Spotify embed's 3rd-party cookies; accepted tradeoff for in-place player UX).** LCP 457 ms, CLS 0.00.

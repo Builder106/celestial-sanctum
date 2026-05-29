@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { SeoService } from '../../core/seo/seo.service';
 import { Display } from '../../shared/ui/display';
@@ -58,8 +59,45 @@ interface UseOfFunds {
 
       <!-- Amount selector -->
       <div sanctumReveal [delay]="150" class="bg-sanctum-paper border border-sanctum-rule rounded-sm p-8 md:p-12 max-w-2xl mx-auto">
+        <!-- Frequency toggle: one-time vs monthly. Recurring is gated on
+             the parish creating a subscription button in their PayPal
+             Business account and providing its hosted_button_id (see
+             PAYPAL_SETUP.md). Until that ID is in place, the "Monthly"
+             tab stays clickable but the CTA gracefully points visitors
+             at the contact form rather than a broken PayPal URL. -->
+        <div class="flex items-center justify-center mb-8">
+          <div class="inline-flex p-1 bg-sanctum-cream border border-sanctum-rule rounded-sm" role="tablist" aria-label="Donation frequency">
+            <button
+              type="button"
+              role="tab"
+              [attr.aria-selected]="frequency() === 'once'"
+              (click)="setFrequency('once')"
+              class="px-5 py-2 font-body text-xs uppercase tracking-[0.2em] font-semibold transition-colors"
+              [class.bg-sanctum-burgundy]="frequency() === 'once'"
+              [class.text-sanctum-cream]="frequency() === 'once'"
+              [class.text-sanctum-muted]="frequency() !== 'once'"
+              [class.hover:text-sanctum-ink]="frequency() !== 'once'"
+            >
+              One-time
+            </button>
+            <button
+              type="button"
+              role="tab"
+              [attr.aria-selected]="frequency() === 'monthly'"
+              (click)="setFrequency('monthly')"
+              class="px-5 py-2 font-body text-xs uppercase tracking-[0.2em] font-semibold transition-colors"
+              [class.bg-sanctum-burgundy]="frequency() === 'monthly'"
+              [class.text-sanctum-cream]="frequency() === 'monthly'"
+              [class.text-sanctum-muted]="frequency() !== 'monthly'"
+              [class.hover:text-sanctum-ink]="frequency() !== 'monthly'"
+            >
+              Monthly
+            </button>
+          </div>
+        </div>
+
         <p class="font-body text-xs uppercase tracking-[0.3em] text-sanctum-blue font-semibold mb-6 text-center">
-          Suggested amount
+          {{ frequency() === 'monthly' ? 'Suggested monthly amount' : 'Suggested amount' }}
         </p>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
           @for (amount of presetAmounts; track amount) {
@@ -74,7 +112,7 @@ interface UseOfFunds {
               [class.hover:border-sanctum-gold]="selectedAmount() !== amount"
               (click)="selectAmount(amount)"
             >
-              \${{ amount }}
+              \${{ amount }}<span class="font-body text-sm font-normal text-current/70 ml-1">{{ frequency() === 'monthly' ? '/mo' : '' }}</span>
             </button>
           }
           <button
@@ -92,21 +130,47 @@ interface UseOfFunds {
           </button>
         </div>
 
-        <a
-          [href]="paypalUrl()"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="w-full inline-flex items-center justify-center gap-3 px-9 py-5 bg-sanctum-burgundy text-sanctum-cream font-body text-sm font-medium tracking-[0.18em] uppercase hover:bg-sanctum-ink transition-colors"
-        >
-          <sanctum-icon name="heart" [size]="18" />
-          Continue to PayPal
-          <sanctum-icon name="arrow-up-right" [size]="14" />
-        </a>
-
-        <p class="font-body text-xs text-sanctum-muted text-center mt-5 leading-relaxed">
-          You'll be redirected to PayPal's secure checkout. You can enter any
-          amount you'd like there, regardless of the suggestion above.
-        </p>
+        @if (paypalUrl()) {
+          <a
+            [href]="paypalUrl()"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-full inline-flex items-center justify-center gap-3 px-9 py-5 bg-sanctum-burgundy text-sanctum-cream font-body text-sm font-medium tracking-[0.18em] uppercase hover:bg-sanctum-ink transition-colors"
+          >
+            <sanctum-icon name="heart" [size]="18" />
+            {{ frequency() === 'monthly' ? 'Subscribe via PayPal' : 'Continue to PayPal' }}
+            <sanctum-icon name="arrow-up-right" [size]="14" />
+          </a>
+          <p class="font-body text-xs text-sanctum-muted text-center mt-5 leading-relaxed">
+            @if (frequency() === 'monthly') {
+              You'll be redirected to PayPal's secure checkout to start your
+              monthly gift. Cancel anytime in your PayPal account.
+            } @else {
+              You'll be redirected to PayPal's secure checkout. You can enter any
+              amount you'd like there, regardless of the suggestion above.
+            }
+          </p>
+        } @else {
+          <!-- Monthly giving placeholder: shown when the recurring hosted
+               button ID hasn't been provided yet. Routes visitors at the
+               contact form so the parish can set up recurring manually
+               in the interim. -->
+          <a
+            routerLink="/contact"
+            queryParamsHandling="merge"
+            [queryParams]="{ topic: 'Monthly giving' }"
+            class="w-full inline-flex items-center justify-center gap-3 px-9 py-5 border border-sanctum-burgundy text-sanctum-burgundy font-body text-sm font-medium tracking-[0.18em] uppercase hover:bg-sanctum-burgundy hover:text-sanctum-cream transition-colors"
+          >
+            <sanctum-icon name="heart" [size]="18" />
+            Contact us to set up monthly giving
+            <sanctum-icon name="arrow-up-right" [size]="14" />
+          </a>
+          <p class="font-body text-xs text-sanctum-muted text-center mt-5 leading-relaxed">
+            Monthly giving via PayPal is being set up. Until it goes live,
+            email the parish and we'll start a recurring gift with you
+            directly — usually same day.
+          </p>
+        }
       </div>
     </section>
 
@@ -206,20 +270,69 @@ export class Give {
     });
   }
 
-  /** PayPal hosted button ID — extracted from the live celestialsanctumparish.org/give.php */
-  private readonly paypalButtonId = 'XWNJRKDNUUTFU';
+  /**
+   * PayPal hosted button IDs.
+   *
+   * `oneTime` — the existing "Donate" button on the parish's PayPal
+   * Business account. ID lifted from the live celestialsanctumparish.org
+   * /give.php. Verify periodically (see PAYPAL_SETUP.md → "Verify the
+   * existing donate button").
+   *
+   * `monthly` — a Subscribe button the parish needs to create in PayPal
+   * Business and paste here. Until it's set, the monthly tab on /give
+   * gracefully points visitors at the contact form instead of building
+   * a broken PayPal URL.
+   */
+  private readonly paypalButtons = {
+    oneTime: 'XWNJRKDNUUTFU',
+    monthly: null as string | null,
+  };
 
   protected readonly presetAmounts = [5, 10, 25, 100];
   protected readonly selectedAmount = signal<number | 'custom'>(25);
+  protected readonly frequency = signal<'once' | 'monthly'>('once');
+
+  private readonly platformId = inject(PLATFORM_ID);
+
+  /** Returns a PayPal checkout URL for the current selection, or null when
+   *  the recurring button hasn't been provisioned yet (the template then
+   *  swaps in a contact-the-parish CTA). */
+  protected readonly paypalUrl = computed<string | null>(() => {
+    const buttonId =
+      this.frequency() === 'monthly'
+        ? this.paypalButtons.monthly
+        : this.paypalButtons.oneTime;
+    if (!buttonId) return null;
+
+    const params = new URLSearchParams({
+      cmd: '_s-xclick',
+      hosted_button_id: buttonId,
+    });
+    const amount = this.selectedAmount();
+    if (typeof amount === 'number') params.set('amount', amount.toString());
+
+    // Pass a return URL so PayPal lands the donor on /give/thank-you
+    // after a successful payment. PayPal honors this only if the
+    // hosted button is configured to "let merchant specify URL" —
+    // see PAYPAL_SETUP.md. Only emit on the browser since we need an
+    // absolute origin and SSR can't construct one; the prerendered
+    // HTML omits these params and Angular's signal re-evaluation
+    // adds them once the browser hydrates.
+    if (isPlatformBrowser(this.platformId)) {
+      const origin = window.location.origin;
+      params.set('return', `${origin}/give/thank-you`);
+      params.set('cancel_return', `${origin}/give`);
+    }
+
+    return `https://www.paypal.com/cgi-bin/webscr?${params.toString()}`;
+  });
 
   protected selectAmount(amount: number | 'custom'): void {
     this.selectedAmount.set(amount);
   }
 
-  protected paypalUrl(): string {
-    const base = `https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=${this.paypalButtonId}`;
-    const a = this.selectedAmount();
-    return typeof a === 'number' ? `${base}&amount=${a}` : base;
+  protected setFrequency(value: 'once' | 'monthly'): void {
+    this.frequency.set(value);
   }
 
   protected readonly useOfFunds: UseOfFunds[] = [

@@ -17,6 +17,9 @@ export interface SeoMeta {
   // future blog post route with its own image).
   imageUrl?: string;
   bareTitle?: boolean;
+  // Block search engines from indexing this page. Use for transient
+  // surfaces — donation thank-you, in-flight confirmations, etc.
+  noindex?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -41,6 +44,12 @@ export class SeoService {
     this.metaService.updateTag({ name: 'twitter:title', content: title });
     this.metaService.updateTag({ name: 'twitter:description', content: meta.description });
     this.metaService.updateTag({ name: 'twitter:image', content: image });
+
+    if (meta.noindex) {
+      this.metaService.updateTag({ name: 'robots', content: 'noindex, nofollow' });
+    } else {
+      this.metaService.removeTag('name="robots"');
+    }
 
     this.setCanonical(url);
   }
