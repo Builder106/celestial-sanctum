@@ -38,31 +38,31 @@ import { PRIMARY_NAV } from './nav-data';
               [routerLink]="item.path"
               routerLinkActive="text-sanctum-burgundy after:scale-x-100"
               [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-              class="relative px-4 py-2 font-body text-xs uppercase tracking-[0.22em] font-semibold text-sanctum-ink hover:text-sanctum-burgundy transition-colors after:absolute after:left-4 after:right-4 after:bottom-1 after:h-px after:bg-sanctum-gold after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left"
+              class="relative whitespace-nowrap px-3 py-2 font-body text-xs uppercase tracking-[0.2em] font-semibold text-sanctum-ink hover:text-sanctum-burgundy transition-colors after:absolute after:left-3 after:right-3 after:bottom-1 after:h-px after:bg-sanctum-gold after:scale-x-0 hover:after:scale-x-100 after:transition-transform after:origin-left"
             >
               {{ item.label }}
             </a>
           }
         </nav>
 
-        <div class="hidden lg:flex items-center gap-5">
+        <div class="hidden lg:flex items-center gap-3">
           <button
             type="button"
             (click)="openSearch()"
             aria-label="Search the parish (Cmd+K)"
-            class="group inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-sanctum-rule bg-sanctum-paper/60 hover:border-sanctum-gold transition-colors"
+            title="Search · ⌘K"
+            class="group inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border border-sanctum-rule bg-sanctum-paper/60 hover:border-sanctum-gold transition-colors"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" class="text-sanctum-muted group-hover:text-sanctum-ink transition-colors" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" class="text-sanctum-muted group-hover:text-sanctum-ink transition-colors" aria-hidden="true">
               <circle cx="11" cy="11" r="7" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            <span class="font-body text-[11px] uppercase tracking-[0.22em] font-semibold text-sanctum-muted group-hover:text-sanctum-ink transition-colors">Search</span>
-            <kbd class="font-mono text-[10px] text-sanctum-muted/70 border border-sanctum-rule rounded-sm px-1 py-px ml-1">⌘K</kbd>
+            <kbd class="font-mono text-[10px] text-sanctum-muted/80 group-hover:text-sanctum-ink transition-colors">⌘K</kbd>
           </button>
 
           <a
             routerLink="/contact"
-            class="inline-flex items-center gap-2 font-body text-xs uppercase tracking-[0.22em] font-semibold text-sanctum-blue hover:text-sanctum-burgundy transition-colors"
+            class="inline-flex items-center gap-1.5 whitespace-nowrap font-body text-xs uppercase tracking-[0.2em] font-semibold text-sanctum-blue hover:text-sanctum-burgundy transition-colors"
           >
             Contact
             <sanctum-icon name="chevron-right" [size]="12" />
