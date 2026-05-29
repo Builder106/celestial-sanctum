@@ -249,19 +249,6 @@ interface ComingShow {
                 </span>
 
                 <div class="relative">
-                  <!-- Status pill: gradient via inline style (Tailwind v4's
-                       gradient utilities need more wiring than is worth
-                       declaring for one chip), plus a pulsing dot. -->
-                  <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[#3BA0E8]/30 mb-6">
-                    <span class="relative flex w-1.5 h-1.5">
-                      <span class="absolute inline-flex w-full h-full rounded-full bg-[#3BA0E8] opacity-70 animate-ping motion-reduce:hidden"></span>
-                      <span class="relative inline-flex w-1.5 h-1.5 rounded-full bg-[#3BA0E8]"></span>
-                    </span>
-                    <span class="text-[10px] font-bold uppercase tracking-[0.25em] text-[#5FB8F3]">
-                      In development
-                    </span>
-                  </div>
-
                   <h3 class="text-2xl font-bold text-white mb-3 leading-tight">
                     {{ show.title }}
                   </h3>
