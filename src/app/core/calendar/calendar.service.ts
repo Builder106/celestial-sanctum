@@ -41,6 +41,12 @@ export class CalendarService {
    * Stream of the next ~50 upcoming events, sorted ascending by start time.
    * `null` is the loading / failure state — components render an empty
    * agenda surface when null so the layout doesn't jump.
+   *
+   * Resolution order:
+   *  1. TransferState payload (browser, first paint after SSR'd page load)
+   *  2. Direct iCal fetch + parse (server, during SSR / prerender)
+   *  3. /api/calendar fallback (browser, when arriving via SPA route change
+   *     and TransferState wasn't seeded for this route)
    */
   events(): Observable<CalendarEvent[] | null> {
     const cached = this.transferState.get<CalendarEvent[] | null>(eventsKey, null);
@@ -48,10 +54,20 @@ export class CalendarService {
       this.transferState.remove(eventsKey);
       return of(cached);
     }
-    // Browser side without a TransferState payload means SSR couldn't reach
-    // the iCal feed (or this is a client-only render). Bail out gracefully —
-    // the agenda component shows an empty / fallback state.
-    if (!this.isServer) return of(null);
+
+    // Browser side without TransferState: visitor arrived via SPA
+    // navigation (e.g. tapped "Calendar" in the hamburger menu) so this
+    // route never went through SSR. Fetch from our own API instead —
+    // /api/calendar runs the same fetch+parse server-side and returns
+    // JSON. Same-origin so no CORS dance.
+    if (!this.isServer) {
+      return defer(() => from(this.fetchFromApi())).pipe(
+        catchError((err: unknown) => {
+          console.error('[CalendarService] /api/calendar fallback failed:', err);
+          return of(null as CalendarEvent[] | null);
+        }),
+      );
+    }
 
     // Server side: fetch + parse + cache.
     const releaseTask = this.pendingTasks.add();
@@ -65,6 +81,13 @@ export class CalendarService {
       }),
       finalize(() => releaseTask()),
     );
+  }
+
+  private async fetchFromApi(): Promise<CalendarEvent[] | null> {
+    const res = await fetch('/api/calendar');
+    if (!res.ok) return null;
+    const body = (await res.json()) as { events?: CalendarEvent[] };
+    return body.events ?? null;
   }
 
   /**

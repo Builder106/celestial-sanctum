@@ -40,6 +40,12 @@ export class YouTubeService {
    * / failure state — components render a calm fallback link out to the
    * channel when null so a transient outage doesn't make the section
    * disappear without explanation.
+   *
+   * Resolution order:
+   *  1. TransferState payload (browser, first paint after SSR'd page load)
+   *  2. Direct RSS fetch + parse (server, during SSR / prerender)
+   *  3. /api/youtube fallback (browser, when arriving via SPA route change
+   *     and TransferState wasn't seeded for this route)
    */
   videos(): Observable<YouTubeVideo[] | null> {
     const cached = this.transferState.get<YouTubeVideo[] | null>(videosKey, null);
@@ -47,7 +53,18 @@ export class YouTubeService {
       this.transferState.remove(videosKey);
       return of(cached);
     }
-    if (!this.isServer) return of(null);
+
+    // Browser side without TransferState: visitor arrived via SPA
+    // navigation, so this route never went through SSR. Fetch from
+    // our own API — /api/youtube runs the same fetch+parse server-side.
+    if (!this.isServer) {
+      return defer(() => from(this.fetchFromApi())).pipe(
+        catchError((err: unknown) => {
+          console.error('[YouTubeService] /api/youtube fallback failed:', err);
+          return of(null as YouTubeVideo[] | null);
+        }),
+      );
+    }
 
     const releaseTask = this.pendingTasks.add();
     return defer(() => from(this.fetchAndParse())).pipe(
@@ -60,6 +77,13 @@ export class YouTubeService {
       }),
       finalize(() => releaseTask()),
     );
+  }
+
+  private async fetchFromApi(): Promise<YouTubeVideo[] | null> {
+    const res = await fetch('/api/youtube');
+    if (!res.ok) return null;
+    const body = (await res.json()) as { videos?: YouTubeVideo[] };
+    return body.videos ?? null;
   }
 
   private async fetchAndParse(): Promise<YouTubeVideo[]> {
