@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, HostListener, inject, signal } from
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Icon } from '../ui/icon';
 import { SanctumMark } from '../ui/sanctum-mark';
+import { PlatformService } from '../../core/platform/platform.service';
 import { SearchService } from '../../core/search/search.service';
 import { PRIMARY_NAV } from './nav-data';
 
@@ -37,6 +38,7 @@ import { PRIMARY_NAV } from './nav-data';
           </span>
         </a>
 
+        @if (!isNative) {
         <nav class="hidden lg:flex items-center gap-1" aria-label="Primary">
           @for (item of nav; track item.path) {
             <a
@@ -86,6 +88,7 @@ import { PRIMARY_NAV } from './nav-data';
             <sanctum-icon name="chevron-right" [size]="12" />
           </a>
         </div>
+        }
 
         <div class="lg:hidden flex items-center gap-1">
           <button
@@ -145,8 +148,15 @@ import { PRIMARY_NAV } from './nav-data';
 })
 export class Header {
   private readonly search = inject(SearchService);
+  private readonly platform = inject(PlatformService);
   protected readonly nav = PRIMARY_NAV;
   protected readonly mobileOpen = signal(false);
+
+  /** True inside the Capacitor native shell. Hides the desktop nav cluster
+   *  + Contact link because those routes live in the bottom tab bar; the
+   *  mobile hamburger stays so secondary routes (About, Visit, Contact,
+   *  Choir, CZM, Constitution) remain reachable. */
+  protected readonly isNative = this.platform.isNative;
 
   protected toggleMobile() {
     this.mobileOpen.update((v) => !v);

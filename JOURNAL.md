@@ -6,6 +6,28 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-05-30 — Native shell: tab bar + CCC-seal app icon #milestone
+
+Capacitor builds now ship the parish shell adapted for iOS / Android.
+A `PlatformService` exposes `Capacitor.isNativePlatform()` as the gate;
+when true, `App.html` swaps the parish footer for a fixed bottom
+`MobileTabBar` (Home / Watch / Calendar / Give) and the header hides
+its desktop nav + Contact cluster — the hamburger drawer still opens
+the full menu so About / Visit / Contact / Choir / CZM / Constitution
+remain reachable. A `pb-mobile-tabs` utility (60px + safe-area-bottom)
+keeps trailing content above the bar over the iOS home indicator and
+Android gesture pill. `@capacitor/assets` generated 104 platform
+icons + splashes (87 Android, 10 iOS, 7 PWA) from a 1024×1024 source
+built by rasterizing the existing `cccIcon.svg` and compositing onto
+the parish cream `#FBF8F1` — matches the live site's apple-touch-icon
+precedent. **Why:** the tab-bar surface is the only native pattern
+iOS users will recognize as a "real app"; without it the build still
+feels like a wrapped website. **How to apply:** any future
+parish-specific surface (push registration UI, native-only flows)
+gates on `PlatformService.isNative`, not on user-agent sniffing or
+viewport width — the same web bundle ships in three places (web,
+iOS, Android) and the platform service is the single discriminator.
+
 ## 2026-05-29 — Drop the One-time / Monthly toggle on /give #decision
 
 User asked the right question: do we really need separate buttons when

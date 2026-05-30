@@ -4,20 +4,28 @@ import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs/operators';
 import { Header } from './shared/layout/header';
 import { Footer } from './shared/layout/footer';
+import { MobileTabBar } from './shared/layout/mobile-tab-bar';
 import { SearchPalette } from './shared/search/search-palette';
+import { PlatformService } from './core/platform/platform.service';
 import { routeFade } from './core/motion/route-animations';
 
 @Component({
   selector: 'sanctum-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, Header, Footer, SearchPalette],
+  imports: [RouterOutlet, Header, Footer, MobileTabBar, SearchPalette],
   templateUrl: './app.html',
   styleUrl: './app.css',
   animations: [routeFade],
 })
 export class App {
   private readonly router = inject(Router);
+  private readonly platformService = inject(PlatformService);
+
+  /** True inside the Capacitor native shell. Swaps the parish footer for
+   *  a bottom tab bar; the parish header hides its desktop nav since the
+   *  same routes live in the tab bar. */
+  protected readonly isNative = this.platformService.isNative;
 
   /**
    * Routes that opt out of the parish header/footer shell — sub-microsites

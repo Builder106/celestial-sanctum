@@ -1,14 +1,21 @@
 @if (!bareChrome()) {
   <sanctum-header />
 }
-<main id="main" class="route-host" [@routeFade]="prepareRoute(outlet)">
+<main
+  id="main"
+  class="route-host"
+  [class.pb-mobile-tabs]="isNative && !bareChrome()"
+  [@routeFade]="prepareRoute(outlet)"
+>
   <router-outlet #outlet="outlet" />
 </main>
-@if (!bareChrome()) {
+@if (!bareChrome() && !isNative) {
   <sanctum-footer />
+}
+@if (isNative && !bareChrome()) {
+  <sanctum-mobile-tab-bar />
 }
 <!-- Global search palette: lives at the root so ⌘K works on every route
      (the keyboard listener inside the component is registered on the
      document). Hidden visually until the palette opens. -->
 <sanctum-search-palette />
-

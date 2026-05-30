@@ -119,3 +119,11 @@ body::before {
     clip-path: none !important;
   }
 }
+
+/* Bottom padding utility for the main scroll area when the mobile tab
+   bar is rendered. 60px is the tab bar's content height; the env()
+   value adds the iOS home-indicator / Android gesture-pill clearance
+   on top so the last bit of page content doesn't get covered. */
+.pb-mobile-tabs {
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+}
