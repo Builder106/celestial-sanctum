@@ -123,7 +123,9 @@ interface ComingShow {
       <!-- About / Who We Are -->
       <section id="about" class="bg-white text-czm-navy px-6 py-24 md:py-32 scroll-mt-20">
         <div class="max-w-3xl mx-auto">
-          <p class="text-center text-[11px] font-bold uppercase tracking-[0.3em] text-czm-blue mb-4">
+          <!-- text-czm-blue-deep instead of -blue: the brand blue
+               doesn't have enough contrast against white per WCAG AA. -->
+          <p class="text-center text-[11px] font-bold uppercase tracking-[0.3em] text-czm-blue-deep mb-4">
             Our Mission
           </p>
           <h2 class="text-center text-3xl md:text-5xl font-bold tracking-tight text-czm-navy mb-12">
@@ -264,7 +266,8 @@ interface ComingShow {
       >
         <div class="max-w-6xl mx-auto">
           <div class="text-center mb-16 md:mb-20">
-            <p class="text-[11px] font-bold uppercase tracking-[0.3em] text-czm-blue mb-4">
+            <!-- text-czm-blue-deep on light bg per WCAG AA contrast. -->
+            <p class="text-[11px] font-bold uppercase tracking-[0.3em] text-czm-blue-deep mb-4">
               In the Works
             </p>
             <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-czm-navy mb-4">
@@ -390,6 +393,11 @@ interface ComingShow {
       --color-czm-muted: #7b8fa8;
       --color-czm-blue: #3ba0e8;
       --color-czm-blue-bright: #5fb8f3;
+      /* Deeper blue for use on light backgrounds (Our Mission / Coming
+         Soon sections). The bright #3ba0e8 fails WCAG AA 4.5:1 against
+         white (2.84:1); this passes at ~5.1:1 while staying clearly
+         within the same blue family. */
+      --color-czm-blue-deep: #1e6fa8;
     }
     .bg-czm-navy { background-color: var(--color-czm-navy); }
     .bg-czm-navy\\/85 { background-color: color-mix(in srgb, var(--color-czm-navy) 85%, transparent); }
@@ -401,6 +409,7 @@ interface ComingShow {
     .text-czm-navy { color: var(--color-czm-navy); }
     .text-czm-blue { color: var(--color-czm-blue); }
     .text-czm-blue-bright { color: var(--color-czm-blue-bright); }
+    .text-czm-blue-deep { color: var(--color-czm-blue-deep); }
     .bg-czm-blue { background-color: var(--color-czm-blue); }
     .bg-czm-blue\\/15 { background-color: color-mix(in srgb, var(--color-czm-blue) 15%, transparent); }
     .border-czm-blue { border-color: var(--color-czm-blue); }
