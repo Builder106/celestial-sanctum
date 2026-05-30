@@ -6,6 +6,17 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-05-30 — Dependabot's TypeScript 6 bump can't satisfy Angular 21 #incident #decision
+
+Dependabot's weekly dev-tooling PR (#8) kept bundling a `typescript` 5.9 → 6.0
+major that Angular 21 forbids — `@angular/build` and `@angular/compiler-cli`
+pin `typescript >=5.9 <6.0`, so `npm ci` died with ERESOLVE before the build
+ran and the PR sat red for days. Closed #8 and added a Dependabot `ignore` for
+`typescript` semver-majors until Angular ships TS 6 support (v22+). The grouped
+jsdom 28→29 bump was collateral and will return on its own once it's no longer
+chained to the blocked TS major. Lesson: group bumps are only as mergeable as
+their most-constrained member.
+
 ## 2026-05-30 — Native shell: tab bar + CCC-seal app icon #milestone
 
 Capacitor builds now ship the parish shell adapted for iOS / Android.
