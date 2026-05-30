@@ -45,7 +45,11 @@ interface ComingShow {
         class="sticky top-0 z-40 backdrop-blur-md bg-czm-navy/85 border-b border-white/5"
       >
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
-          <a routerLink="/czm" class="flex items-center gap-3 group" aria-label="Celestial Zeitgeist Ministries — home">
+          <!-- aria-label intentionally omitted — the visible two-line
+               "Celestial Zeitgeist · MINISTRIES" wordmark becomes the
+               accessible name, which matches WCAG 2.5.3 for voice
+               control users. -->
+          <a routerLink="/czm" class="flex items-center gap-3 group">
             <img
               src="/img/czm-logo.png"
               alt=""
@@ -109,7 +113,7 @@ interface ComingShow {
               <path d="M12 5v14M19 12l-7 7-7-7" />
             </svg>
           </a>
-          <div class="mt-16 flex flex-col items-center gap-2 text-white/40">
+          <div class="mt-16 flex flex-col items-center gap-2 text-white/60">
             <span class="w-px h-10 bg-white/15"></span>
             <span class="text-[10px] uppercase tracking-[0.3em]">Scroll</span>
           </div>
@@ -197,10 +201,14 @@ interface ComingShow {
                       loading="lazy"
                     ></iframe>
                   } @else {
+                    <!-- aria-label omitted — the visible two-line text
+                         ("Listen on Spotify · <podcast title>")
+                         becomes the accessible name. Naming the title
+                         in visible text also tells the visitor which
+                         show they're about to play. -->
                     <button
                       type="button"
                       (click)="activatePodcast(podcast.showId)"
-                      [attr.aria-label]="'Play ' + podcast.title + ' on Spotify'"
                       class="group w-full h-full flex items-center justify-between gap-4 px-5 text-left transition-colors hover:bg-czm-card"
                     >
                       <span class="flex items-center gap-3 min-w-0">
@@ -217,7 +225,7 @@ interface ComingShow {
                             Listen on Spotify
                           </span>
                           <span class="text-white text-sm font-semibold truncate">
-                            Tap to play the latest episode
+                            {{ podcast.title }}
                           </span>
                         </span>
                       </span>
@@ -305,11 +313,11 @@ interface ComingShow {
                        these cards will eventually become tappable show
                        links without overpromising clickability today. -->
                   <div class="flex items-center justify-between pt-5 border-t border-white/8">
-                    <span class="text-[11px] uppercase tracking-[0.25em] text-white/40 font-semibold">
+                    <span class="text-[11px] uppercase tracking-[0.25em] text-white/60 font-semibold">
                       Stay tuned
                     </span>
                     <span
-                      class="text-white/40 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[#5FB8F3]"
+                      class="text-white/60 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[#5FB8F3]"
                       aria-hidden="true"
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -360,7 +368,7 @@ interface ComingShow {
             <a routerLink="/" class="text-czm-blue hover:text-czm-blue-bright underline underline-offset-4 transition-colors">Celestial Sanctum Parish</a>
             · Celestial Church of Christ
           </p>
-          <p class="text-[12px] text-white/35 mb-6">
+          <p class="text-[12px] text-white/55 mb-6">
             © {{ year() }} Celestial Zeitgeist Ministries. All rights reserved.
           </p>
         </div>
