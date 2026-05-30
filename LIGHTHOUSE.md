@@ -14,12 +14,12 @@ Run via Chrome DevTools MCP, desktop emulation, navigation mode.
 | `/` | 100 | 100 | 100 | 100 |
 | `/visit` | 100 | 100 | 100 | 100 |
 | `/about` | 100 | 100 | 100 | 100 |
-| `/watch` | 100 | 100 | 100 | 100 |
+| `/watch` | 100 | 77 | 100 | 100 |
 | `/calendar` | 100 | 100 | 100 | 90 |
 | `/give` | 100 | 100 | 100 | 91 |
 | `/contact` | 100 | 100 | 100 | 100 |
 | `/choir` | 100 | 100 | 100 | 100 |
-| `/czm` | 100 | 100 | 100 | 92 |
+| `/czm` | 100 | 77 | 100 | 92 |
 
 Performance category is excluded from `lighthouse_audit` by design;
 we ran `performance_start_trace` separately on `/calendar` to
@@ -39,10 +39,14 @@ except `/watch` (77) and `/czm` (77) which both shipped Spotify
 embeds; CLS on `/calendar` `/give` `/czm` was elevated by the
 webfont swap.
 
-**After this pass:** every route hits 100 across Accessibility,
-Best Practices, and SEO. Agentic Browsing sits at 90–92 on three
-routes (`/calendar`, `/give`, `/czm`) — see "Agentic Browsing
-remaining" below.
+**After this pass:** Accessibility + SEO are 100 on every route.
+Best Practices is 100 everywhere except `/watch` and `/czm`, which
+hold at 77 — the parish prefers the vanilla Spotify iframe (cover
+art + scrubber visible on first paint) over a click-to-load facade,
+and Spotify's iframe drops `sp_t` / `sp_landing` third-party cookies
+the moment it loads. Agentic Browsing sits at 90–92 on three routes
+(`/calendar`, `/give`, `/czm`) — see "Agentic Browsing remaining"
+below.
 
 ## Fixes shipped
 
@@ -82,21 +86,19 @@ Lighthouse's synthetic CLS reading lingers above 0.1 on these
 routes; the post-fix performance trace shows CLS = 0.00 in lab
 conditions, so real-user CLS will track the trace number.
 
-### 3. Spotify cookies (watch / czm)
+### 3. Spotify cookies (watch / czm) — accepted tradeoff
 
-Reverted the parish's earlier preference for the live iframe in
-favor of click-to-load. `SpotifyEmbed` and CZM's inline podcast
-embeds now render a parish/CZM-styled play card on first paint
-(parish: green Spotify glyph + Cormorant title + burgundy play
-button; CZM: same glyph in navy + electric-blue chrome). The
-iframe only mounts on click, so the `sp_t` / `sp_landing`
-third-party cookies don't drop until explicit user consent.
-`autoplay=1` in the embed URL so playback starts the moment the
-iframe takes over — matches the muscle memory of a direct embed.
+Tried a click-to-load facade on `SpotifyEmbed` and CZM's inline
+podcast embeds; it lifted Best Practices on both routes from 77 to
+100 by deferring the iframe (and therefore the `sp_t` / `sp_landing`
+third-party cookies) until explicit user interaction. The parish
+preferred the vanilla iframe with cover art, episode title, and
+scrubber visible on first paint, so the facade was reverted.
 
-The wrapper pins its full height even before activation so the
-layout reserves the space; the iframe expansion that previously
-contributed to CLS is gone.
+Kept: the wrapper height pinning that landed alongside the facade.
+The iframe wrapper reserves its full height before paint even with
+vanilla iframes, so the embed-expansion contribution to CLS is
+gone regardless of facade status.
 
 ### 4. CZM contrast + label polish
 

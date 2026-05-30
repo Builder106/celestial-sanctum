@@ -182,65 +182,23 @@ interface ComingShow {
                 <p class="text-white/55 text-[14px] leading-relaxed mb-6">
                   {{ podcast.description }}
                 </p>
-                <!-- Click-to-load facade: the Spotify iframe drops
-                     sp_t / sp_landing third-party cookies on mount, so
-                     deferring it behind an explicit click keeps
-                     Best Practices at 100. The facade is dark-navy +
-                     electric-blue so it fits the CZM card aesthetic
-                     rather than the parish SpotifyEmbed's cream + green
-                     chrome. Once activated, the iframe takes over with
-                     autoplay=1 in the embed URL so it starts playing
-                     immediately. -->
+                <!-- Vanilla Spotify embed. Wrapper height is pinned so
+                     the layout reserves the space before the iframe
+                     paints — keeps CLS at zero. Trade-off: the iframe
+                     drops sp_t / sp_landing third-party cookies on
+                     load, which is a Best Practices ding (~77 on /czm).
+                     A facade was tried; the parish preferred the live
+                     player UX with cover art + scrubber visible. -->
                 <div class="rounded-xl overflow-hidden bg-czm-card-deep h-[152px]">
-                  @if (isActivated(podcast.showId)) {
-                    <iframe
-                      [src]="embedUrl(podcast.showId)"
-                      [title]="podcast.title + ' on Spotify'"
-                      width="100%"
-                      height="152"
-                      frameborder="0"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
-                    ></iframe>
-                  } @else {
-                    <!-- aria-label omitted — the visible two-line text
-                         ("Listen on Spotify · <podcast title>")
-                         becomes the accessible name. Naming the title
-                         in visible text also tells the visitor which
-                         show they're about to play. -->
-                    <button
-                      type="button"
-                      (click)="activatePodcast(podcast.showId)"
-                      class="group w-full h-full flex items-center justify-between gap-4 px-5 text-left transition-colors hover:bg-czm-card"
-                    >
-                      <span class="flex items-center gap-3 min-w-0">
-                        <span
-                          class="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#1DB954] text-white shadow-[0_4px_12px_-4px_rgba(29,185,84,0.45)] group-hover:scale-105 transition-transform"
-                          aria-hidden="true"
-                        >
-                          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.301.421-1.02.599-1.561.3z"/>
-                          </svg>
-                        </span>
-                        <span class="flex flex-col min-w-0">
-                          <span class="text-[10px] uppercase tracking-[0.25em] text-czm-blue font-bold">
-                            Listen on Spotify
-                          </span>
-                          <span class="text-white text-sm font-semibold truncate">
-                            {{ podcast.title }}
-                          </span>
-                        </span>
-                      </span>
-                      <span
-                        class="shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#3BA0E8] text-white group-hover:bg-[#5FB8F3] transition-colors"
-                        aria-hidden="true"
-                      >
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" class="ml-0.5">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                      </span>
-                    </button>
-                  }
+                  <iframe
+                    [src]="embedUrl(podcast.showId)"
+                    [title]="podcast.title + ' on Spotify'"
+                    width="100%"
+                    height="152"
+                    frameborder="0"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    loading="lazy"
+                  ></iframe>
                 </div>
                 <a
                   [href]="'https://open.spotify.com/show/' + podcast.showId"
@@ -470,34 +428,12 @@ export class Czm {
       // theme=0 = light theme (Spotify's default, white card). The dark
       // theme=1 variant clashes with our dark wrapper card; the contrast
       // between Spotify's white card and our navy card frames each
-      // episode cleanly. autoplay=1 so the embed starts on click —
-      // matches the muscle memory of a direct iframe.
-      const url = `https://open.spotify.com/embed/show/${showId}?utm_source=generator&theme=0&autoplay=1`;
+      // episode cleanly.
+      const url = `https://open.spotify.com/embed/show/${showId}?utm_source=generator&theme=0`;
       cached = this.sanitizer.bypassSecurityTrustResourceUrl(url);
       this.embedCache.set(showId, cached);
     }
     return cached;
-  }
-
-  /**
-   * Set of show IDs whose Spotify iframe has been activated by a click.
-   * Held as a signal so the template re-renders the right card when one
-   * flips. Initial state is empty — every card renders the facade until
-   * the visitor explicitly opts in. Keeps third-party cookies out of
-   * the initial page load and the Best Practices score at 100.
-   */
-  private readonly activatedShows = signal(new Set<string>());
-
-  protected isActivated(showId: string): boolean {
-    return this.activatedShows().has(showId);
-  }
-
-  protected activatePodcast(showId: string): void {
-    this.activatedShows.update((set) => {
-      const next = new Set(set);
-      next.add(showId);
-      return next;
-    });
   }
 
   constructor() {
