@@ -83,7 +83,10 @@ Then('I see the heading {string}', async ({ page }, text: string) => {
   // text-search if the role-based locator misses.
   const byRole = page.getByRole('heading', { name: new RegExp(text, 'i') }).first();
   const byText = page.getByText(new RegExp(text, 'i')).first();
-  await expect(byRole.or(byText)).toBeVisible();
+  // `.or()` of two single-element locators can resolve to two distinct nodes
+  // (e.g. a hero <h1> plus a <p> that both echo the phrase), which trips
+  // strict-mode on toBeVisible(). Collapse the union to the first match.
+  await expect(byRole.or(byText).first()).toBeVisible();
   await dwellForDemo(page);
 });
 
