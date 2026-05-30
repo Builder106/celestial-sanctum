@@ -1,5 +1,37 @@
 @import "tailwindcss";
 
+/*
+  Metric-matched fallback faces. The browser uses these between first
+  paint and the moment @fontsource's WOFF2 arrives. The size-adjust +
+  ascent/descent/line-gap overrides re-shape the local fallback so
+  text rendered with it occupies the same box as the eventual webfont
+  — when @fontsource's file finishes loading and the swap fires, the
+  glyphs change but the layout doesn't shift.
+
+  Values come from Fontaine's curated database of font-fallback
+  metrics (https://github.com/danielroe/fontaine). Tuned for the
+  Cormorant Garamond → Georgia swap and Inter → Arial/system-ui swap
+  used here. These eliminated the CLS spikes Lighthouse flagged on
+  /calendar, /give, and /czm without losing the cathedral typography.
+*/
+@font-face {
+  font-family: "Cormorant Garamond Fallback";
+  src: local("Georgia");
+  size-adjust: 99%;
+  ascent-override: 92%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  size-adjust: 107.4%;
+  ascent-override: 90.2%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+}
+
 @theme {
   /* Reverent Minimalism palette */
   --color-sanctum-cream: #fbf8f1;
@@ -11,9 +43,11 @@
   --color-sanctum-muted: #6b6359;
   --color-sanctum-rule: #e8e2d6;
 
-  /* Typography */
-  --font-display: "Cormorant Garamond", "Garamond", "Times New Roman", serif;
+  /* Typography — the metric-matched fallback sits right after the
+     primary face in each chain so the browser uses it during the swap
+     window, eliminating layout shift when the webfont arrives. */
+  --font-display: "Cormorant Garamond", "Cormorant Garamond Fallback", "Garamond", "Times New Roman", serif;
   --font-body:
-    "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    sans-serif;
+    "Inter", "Inter Fallback", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
 }
