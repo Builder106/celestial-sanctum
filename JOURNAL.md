@@ -6,6 +6,118 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-05-29 — Drop the One-time / Monthly toggle on /give #decision
+
+User asked the right question: do we really need separate buttons when
+PayPal handles that on its page? Answer was no. Both tabs had been
+routing to the same hosted button anyway; the only thing the toggle
+flipped was a couple of words in the help text. Two control surfaces
+for the same decision felt like the site was pretending to do work
+PayPal already does. **Why:** post-toggle the page is honest — one
+amount picker, one CTA, one line of help copy that names both options
+("On PayPal's page, enter $25. Tick 'Make this a monthly donation' if
+you'd like recurring"). **How to apply:** when a third-party flow
+exposes a control we'd duplicate, defer to theirs; surface awareness
+in copy instead of building a parallel UI.
+
+## 2026-05-29 — /give without parish PayPal dashboard access #pivot
+
+The first PayPal pass assumed parish-side dashboard access for two
+things: (1) creating a dedicated Subscribe button for monthly giving,
+(2) flipping per-button settings to remove the "Make this a monthly
+donation" checkbox + allow URL-passed amounts. User confirmed they
+don't have access. Two behaviors live on the parish's existing button
+that we can't override: monthly checkbox always shows; URL `amount=`
+gets ignored. Pivoted from "build around two PayPal buttons" to "build
+honest copy around the one PayPal button, name both behaviors in the
+help text." PAYPAL_SETUP.md rewritten from action-list to state-of-
+the-world reference: documents the three PayPal-side behaviors with
+exact dashboard paths to fix them if access ever opens up.
+
+## 2026-05-29 — Mobile SPA-nav TransferState miss #incident
+
+User report: feeds on /watch and /calendar disappear when arriving via
+the hamburger menu; full reload brings them back. Mobile-only in
+practice because that's where hamburger-nav dominates, but the gap
+exists on every form factor. Root cause: prerendered routes ship feed
+data via TransferState only on initial SSR'd load — when Angular
+routes client-side to a new page, TransferState is empty for that
+route, both services returned null, and the components rendered their
+"Couldn't load" fallback. Fix landed two Vercel functions
+(`/api/calendar`, `/api/youtube`) that mirror the SSR-time fetch/parse
+logic and return JSON. Both services grew a third resolution path:
+TransferState → direct fetch (server) → /api/* fallback (browser
+without TransferState). Edge cache on both functions
+(`s-maxage=300, stale-while-revalidate=600`) keeps load off the
+upstream Google/YouTube endpoints. **How to apply:** any future
+SSR-fetched data source needs a same-origin API endpoint for the
+SPA-nav case; the "direct upstream fetch on browser" path won't work
+(CORS, in the calendar case also dynamic-import shape).
+
+## 2026-05-29 — Parish-wide ⌘K search palette #decision #milestone
+
+User asked for a search bar and floated semantic / hybrid / fuzzy as
+options. Recommended client-side fuzzy (MiniSearch) over hosted
+services (Typesense, Algolia) because the parish corpus is ~100
+documents and the bottleneck wasn't algorithm sophistication — it was
+whether to stand up infrastructure at all. Built the palette: ⌘K
+opens a Spotlight-style overlay, results grouped by kind (Pages,
+Sections, Blog posts, Videos, Podcasts, Music, Events, Documents),
+keyboard nav (↑↓/Enter/Esc). Static corpus is hand-curated in
+[src/app/core/search/search.corpus.ts](src/app/core/search/search.corpus.ts)
+and packed with synonyms (shepherd/pastor, sutana/robe, Luli/grace)
+since the term list is small. Dynamic corpus (blog posts, YouTube
+videos, calendar events) merges in from the existing services'
+TransferState payloads. MiniSearch is dynamic-imported so the 20KB
+chunk only ships if a visitor actually opens the palette — confirmed
+zero references in the prerendered HTML. **Why:** at ~100 documents,
+vector search would have been infrastructure for the sake of it; the
+right call is to defer that decision to when the parish has a sermon
+transcript archive that actually benefits from semantic matching.
+
+## 2026-05-29 — Celestial Zeitgeist Ministries as a bare-chrome microsite #decision
+
+CZM is the parish's youth-led evangelical media ministry; the live
+site at celestialsanctumparish.org/czm intentionally contrasts the
+parish's cream cathedral aesthetic with dark navy + electric blue.
+Recreating it under /czm needed an architectural call: flatten CZM
+into the parish chrome (consistent but wrong feeling), or let it ship
+its own complete shell. Picked the latter via a new `App.BARE_ROUTES`
+mechanism — the root layout reads the current URL and conditionally
+suppresses `<sanctum-header>` / `<sanctum-footer>` for any path in
+that list. CZM renders its own dark header + footer, with a "← Parish
+site" pill in the nav so visitors aren't trapped. Palette tokens
+(navy / electric blue / cream) live as CSS custom props scoped to the
+component host so they don't leak into Tailwind's global theme.
+**How to apply:** when a sub-site needs its own visual identity, the
+BARE_ROUTES escape hatch keeps it under the same domain + routing
+without flattening it into the parent design system.
+
+## 2026-05-29 — Sanctum Choir gets its own /choir page #milestone
+
+Parish wanted to recreate celestialsanctumparish.org/sanctumchoir. The
+choir is part of the parish's core identity (not a youth-led offshoot
+like CZM), so it stays in the cream/Cormorant cathedral chrome rather
+than getting CZM-style microsite treatment. Yoruba praise lyric "Ohun
+ta ni ju wura lo." anchors the hero — a song worth more than gold.
+Featured release card ("Praises in Diverse Spaces", March 2024) +
+Ju Wura music video embed + 5-platform "Listen anywhere" grid lifted
+from the live site. The brand-icon library grew four new glyphs
+(Apple Music, Deezer, Audiomack, Amazon Music) so every platform pill
+gets a real mark rather than a single-letter monogram fallback. Cross-
+link card on /about#choir mirrors the doctrine + CZM card patterns so
+all three "go deeper" hooks read as one design family.
+
+## 2026-05-29 — Link the CCC Constitution PDF prominently #feedback
+
+First pass put the constitution link as an inline sentence at the
+bottom of the /about Doctrine section. User: "I want a more prominent
+link." Replaced with a card — Sanctum mark + "Canonical source"
+eyebrow + Cormorant heading + explainer + primary burgundy button +
+"PDF · 66 pages · opens in a new tab" affordance. **How to apply:**
+when a reference document matters enough to surface in-context, a
+proper card beats an inline link even on a cathedral-restrained site.
+
 ## 2026-05-28 — Embed the parish YouTube channel feed on /watch #milestone
 
 Parish asked for their @cccSanctumParish channel feed embedded on the
