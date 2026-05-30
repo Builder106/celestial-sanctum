@@ -24,7 +24,7 @@ import { PRIMARY_NAV } from './nav-data';
           routerLink="/"
           class="group flex items-center gap-4 text-sanctum-ink"
           (click)="closeMobile()"
-          aria-label="Celestial Sanctum Parish — home"
+          aria-label="Celestial Sanctum — home"
         >
           <sanctum-mark [size]="52" class="shrink-0 transition-transform duration-300 group-hover:scale-105" />
           <span class="hidden sm:flex flex-col leading-none">
@@ -54,10 +54,15 @@ import { PRIMARY_NAV } from './nav-data';
           <!-- Search trigger styled as a faux input field so it reads as
                a search bar at a glance. Cream interior + gold-hairline
                border match the rest of the parish chrome. -->
+          <!-- aria-label omitted intentionally so the visible text
+               ("Search the parish… ⌘K") becomes the accessible name —
+               that satisfies WCAG 2.5.3 (label-in-name) for voice-
+               control users. The ⌘K kbd is decorative for keyboard
+               discoverability; the title attribute gives pointer
+               users the same hint on hover. -->
           <button
             type="button"
             (click)="openSearch()"
-            aria-label="Search the parish (Cmd+K)"
             title="Search · ⌘K"
             class="group inline-flex items-center gap-2.5 w-[190px] xl:w-[240px] px-3 py-2 rounded-sm border border-sanctum-rule bg-sanctum-paper hover:border-sanctum-gold transition-colors"
           >
@@ -68,7 +73,9 @@ import { PRIMARY_NAV } from './nav-data';
             <span class="flex-1 text-left font-body text-[12px] text-sanctum-muted group-hover:text-sanctum-ink transition-colors truncate">
               Search the parish…
             </span>
-            <kbd class="shrink-0 font-mono text-[10px] text-sanctum-muted/80 group-hover:text-sanctum-ink transition-colors border border-sanctum-rule rounded-sm px-1 py-px bg-sanctum-cream/60">⌘K</kbd>
+            <!-- Full muted-color (no /80 opacity reduction) so the kbd
+                 clears WCAG AA 4.5:1 contrast against the cream pill bg. -->
+            <kbd class="shrink-0 font-mono text-[10px] text-sanctum-muted group-hover:text-sanctum-ink transition-colors border border-sanctum-rule rounded-sm px-1 py-px bg-sanctum-cream/60">⌘K</kbd>
           </button>
 
           <a
