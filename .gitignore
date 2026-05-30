@@ -59,3 +59,28 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# Capacitor — native build outputs + machine-specific config. The
+# native project trees (ios/, android/) themselves ARE committed so
+# Xcode / Android Studio settings, plugin configs, and Info.plist
+# changes are versioned alongside the web code. These paths are the
+# transient build artifacts inside those trees.
+ios/App/App/public
+ios/App/Pods
+ios/App/build
+ios/App/DerivedData
+ios/.build
+android/.gradle
+android/app/build
+android/build
+android/local.properties
+android/app/release
+android/app/debug
+
+# Firebase config files — they're checked in to the native projects
+# (Apple expects GoogleService-Info.plist + Android expects google-
+# services.json in the app module), but the webmaster's pre-launch
+# copies live here as a checkpoint. Final files get committed by the
+# build pipeline once provisioned.
+**/GoogleService-Info.plist.local
+**/google-services.json.local
