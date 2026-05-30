@@ -62,7 +62,7 @@
     "@types/express": "^5.0.1",
     "@types/node": "^25.9.1",
     "@vercel/node": "^5.8.4",
-    "jsdom": "^28.0.0",
+    "jsdom": "^29.1.1",
     "playwright-bdd": "^8.5.1",
     "postcss": "^8.5.15",
     "prettier": "^3.8.1",
