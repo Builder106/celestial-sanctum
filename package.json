@@ -62,12 +62,12 @@
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
     "@vercel/node": "^5.8.4",
-    "jsdom": "^28.0.0",
+    "jsdom": "^29.1.1",
     "playwright-bdd": "^8.5.1",
     "postcss": "^8.5.15",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.3.0",
-    "typescript": "~5.9.2",
+    "typescript": "~6.0.3",
     "vitest": "^4.0.8"
   }
 }
