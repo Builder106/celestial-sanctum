@@ -10,16 +10,22 @@ describe('App', () => {
     }).compileComponents();
   });
 
-  it('should create the app shell', () => {
+  it('creates the parish shell', () => {
     const fixture = TestBed.createComponent(App);
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('renders the parish welcome', () => {
-    const fixture = TestBed.createComponent(App);
-    fixture.detectChanges();
-    const host = fixture.nativeElement as HTMLElement;
-    expect(host.textContent).toContain('welcome to');
-    expect(host.textContent).toContain('Sanctum parish');
+  it('shows the parish chrome on a normal route, not the bare /czm microsite', () => {
+    // bareChrome() suppresses the parish header/footer only on BARE_ROUTES
+    // (e.g. /czm). The default test URL is "/", so the chrome stays visible.
+    const app = TestBed.createComponent(App).componentInstance as any;
+    expect(app.bareChrome()).toBe(false);
+  });
+
+  it('emits no route-fade key until the router outlet activates', () => {
+    // prepareRoute() feeds the @routeFade trigger; an inactive outlet must
+    // yield an empty key so the transition doesn't fire on the first paint.
+    const app = TestBed.createComponent(App).componentInstance as any;
+    expect(app.prepareRoute({ isActivated: false })).toBe('');
   });
 });
