@@ -6,6 +6,20 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-05-30 — CI now gates on unit + E2E, not just build #decision #incident
+
+The CI job was named "Build + test" but only ran the build — the Vitest unit
+spec and the Playwright QA suite never executed. Split it into three parallel
+jobs (build / unit / E2E); E2E self-boots `ng serve` and renders against the
+public Sanity dataset, so it needs no CI secrets. Verifying the suite first
+surfaced a real test bug: the shared "I see the heading" step ran `.or()` on
+two single-element locators, which on /visit resolved to two nodes (hero `<h1>`
+plus a `<p>` echoing the phrase) and tripped Playwright strict-mode — fixed
+with an outer `.first()`; suite is now 10/10. Caveat: `npm test` can't be
+verified on this Mac because the project's absolute path has parens —
+`My Drive (yvaughan@…)` — that break Vitest's glob discovery; CI's clean
+checkout path should run it fine.
+
 ## 2026-05-30 — Dependabot's TypeScript 6 bump can't satisfy Angular 21 #incident #decision
 
 Dependabot's weekly dev-tooling PR (#8) kept bundling a `typescript` 5.9 → 6.0
