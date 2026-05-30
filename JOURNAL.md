@@ -15,10 +15,13 @@ public Sanity dataset, so it needs no CI secrets. Verifying the suite first
 surfaced a real test bug: the shared "I see the heading" step ran `.or()` on
 two single-element locators, which on /visit resolved to two nodes (hero `<h1>`
 plus a `<p>` echoing the phrase) and tripped Playwright strict-mode — fixed
-with an outer `.first()`; suite is now 10/10. Caveat: `npm test` can't be
-verified on this Mac because the project's absolute path has parens —
-`My Drive (yvaughan@…)` — that break Vitest's glob discovery; CI's clean
-checkout path should run it fine.
+with an outer `.first()`; suite is now 10/10. Twist: that same parens path
+(`My Drive (yvaughan@…)`) breaks Vitest's spec discovery locally, so the unit
+spec had *never actually run* — and the first real CI run caught two latent
+bugs in it: `detectChanges()` threw NG05105 (no animations provider for the
+`@routeFade` trigger), and it asserted home-route text that isn't in the
+shell. Rewrote the spec to render-free logic checks (`bareChrome` +
+`prepareRoute`); all three jobs (build / unit / E2E) now green on `main`.
 
 ## 2026-05-30 — Dependabot's TypeScript 6 bump can't satisfy Angular 21 #incident #decision
 
