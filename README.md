@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)"  srcset="assets/banner-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="assets/banner-light.png">
+  <source media="(prefers-color-scheme: dark)"  srcset="assets/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/banner-light.svg">
   <img alt="Celestial Sanctum — Angular 21 SSR rebuild of celestialsanctumparish.org" src="assets/banner-light.png">
 </picture>
 

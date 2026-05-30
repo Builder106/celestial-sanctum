@@ -39,6 +39,11 @@ updates:
           - "jsdom"
     commit-message:
       prefix: "deps"
+    ignore:
+      # Angular 21 pins typescript to >=5.9 <6.0, so TS 6 majors fail `npm ci`
+      # with ERESOLVE. Re-enable once Angular supports TypeScript 6 (v22+).
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
