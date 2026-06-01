@@ -41,9 +41,12 @@ Three services in `src/app/core/firebase/`:
   plugin; web uses Firebase's service-worker token path (requires a
   VAPID key from the Firebase Console).
 
-All three are no-ops when Firebase isn't configured, so the web build
-keeps shipping without surprises until the parish webmaster
-provisions the Firebase project.
+All three JS services are no-ops when Firebase isn't configured, so the
+**web** build keeps shipping without surprises. The **native** app is
+different: the `@capacitor-firebase/*` plugins call `FirebaseApp.configure()`
+in their iOS `load()`, which **crashes the app on launch** when
+`GoogleService-Info.plist` is missing. So the native app needs a valid plist
+present to boot at all — it does not degrade gracefully like the web build.
 
 ## Parish webmaster — what to do
 
@@ -142,10 +145,16 @@ Android.
 - [x] Firebase + Capacitor Firebase plugins installed
 - [x] FirebaseService + AuthService + MessagingService skeletons
 - [ ] Parish webmaster: enroll in Apple Developer + Google Play
-- [ ] Parish webmaster: provision Firebase project + share config
-- [ ] Native tab-bar shell (lands after Firebase config arrives)
+- [x] Native tab-bar shell (HOME / WATCH / CALENDAR / GIVE)
+- [x] App icon + splash screens generated from the CCC seal
+- [x] Firebase project provisioned + iOS app registered;
+      GoogleService-Info.plist wired into the App target (gitignored —
+      public repo, so the file is supplied per-machine)
+- [x] iOS app boots + renders on the simulator (2026-06-01, iPhone 17 /
+      iOS 26.5 — native tab bar, sutana hero, live Sanity content)
+- [ ] Firebase remaining: Android `google-services.json`, web config
+      (`NG_APP_FIREBASE_*`), Google/Apple sign-in providers, APNs key
 - [ ] Push registration backend (Firestore `pushTokens` collection +
       Sanity-publish-to-FCM trigger)
-- [ ] App icon + splash screen generation from `public/img/cccIcon.svg`
 - [ ] TestFlight beta build
 - [ ] App Store + Play Store submission

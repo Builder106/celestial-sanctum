@@ -6,6 +6,22 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-06-01 — Native shell verified on simulator; Firebase launch-crash #incident #milestone
+
+First real run of the iOS app on a simulator (Xcode 26.5, iPhone 17) crashed
+instantly: `@capacitor-firebase/authentication`'s native `load()` calls
+`FirebaseApp.configure()` unconditionally, which throws with no
+`GoogleService-Info.plist` — so the native app was un-launchable, contradicting
+MOBILE.md's "no-op when unconfigured" line (true for the JS services, false for
+the native plugin). Provisioned a real Firebase project, registered the iOS app
+(`org.celestialsanctumparish.app`), and referenced the plist in the App target
+via the `xcodeproj` gem (the project isn't a synchronized group, so it needed an
+explicit reference). App now boots clean — native HOME/WATCH/CALENDAR/GIVE tab
+bar, sutana hero, live Sanity content, countdown. The plist is gitignored (the
+public repo carries the API key). Aside: building inside Google Drive filled the
+disk mid-build (Firebase SPM clones are multi-GB); cleared ~5 GB of regenerable
+Xcode/SwiftPM caches to finish — native builds really shouldn't live in Drive.
+
 ## 2026-05-30 — CI now gates on unit + E2E, not just build #decision #incident
 
 The CI job was named "Build + test" but only ran the build — the Vitest unit

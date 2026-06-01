@@ -90,10 +90,14 @@ android/app/debug
 /icons/
 /public/manifest.webmanifest
 
-# Firebase config files — they're checked in to the native projects
-# (Apple expects GoogleService-Info.plist + Android expects google-
-# services.json in the app module), but the webmaster's pre-launch
-# copies live here as a checkpoint. Final files get committed by the
-# build pipeline once provisioned.
-**/GoogleService-Info.plist.local
-**/google-services.json.local
+# Firebase config files — NOT committed. This repo is public, and these
+# carry the Firebase API key + project IDs. They ship inside the app
+# bundle (guarded by Security Rules / App Check / API-key restrictions),
+# but we keep them out of git on a public repo. Each machine / the
+# release pipeline supplies its own copy:
+#   ios/App/App/GoogleService-Info.plist  (Firebase Console -> iOS app)
+#   android/app/google-services.json       (Firebase Console -> Android app)
+# The Xcode project references the plist by path, so a fresh clone must
+# add the file before an iOS build.
+**/GoogleService-Info.plist
+**/google-services.json
