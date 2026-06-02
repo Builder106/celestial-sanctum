@@ -4,6 +4,7 @@ import { SeoService } from '../../core/seo/seo.service';
 import { SanctumButton } from '../../shared/ui/button';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
+import { Icon } from '../../shared/ui/icon';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
 import { SanctumReveal } from '../../core/motion/reveal.directive';
 
@@ -20,7 +21,7 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
   selector: 'sanctum-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Display, Eyebrow, SanctumButton, SanctumMark, SanctumReveal],
+  imports: [Display, Eyebrow, Icon, SanctumButton, SanctumMark, SanctumReveal],
   template: `
     <section
       sanctumReveal
@@ -73,6 +74,9 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
             [disabled]="busy() !== null"
             (click)="signIn('google')"
           >
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-sm bg-white shrink-0">
+              <sanctum-icon name="google" [size]="16" />
+            </span>
             {{ busy() === 'google' ? 'Signing in…' : 'Continue with Google' }}
           </button>
           <button
@@ -82,6 +86,7 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
             [disabled]="busy() !== null"
             (click)="signIn('apple')"
           >
+            <sanctum-icon name="apple" [size]="18" />
             {{ busy() === 'apple' ? 'Signing in…' : 'Continue with Apple' }}
           </button>
         </div>
