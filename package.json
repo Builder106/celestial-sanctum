@@ -4,10 +4,12 @@
   "type": "module",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test",
+    "gen:firebase-env": "node scripts/gen-firebase-env.mjs",
+    "postinstall": "node scripts/gen-firebase-env.mjs",
+    "start": "npm run gen:firebase-env && ng serve",
+    "build": "npm run gen:firebase-env && ng build",
+    "watch": "npm run gen:firebase-env && ng build --watch --configuration development",
+    "test": "npm run gen:firebase-env && ng test",
     "test:e2e": "bddgen --config=playwright.config.ts && playwright test --config=playwright.config.ts",
     "test:demo": "DEMO=1 bddgen --config=playwright.demo.config.ts && DEMO=1 playwright test --config=playwright.demo.config.ts",
     "serve:ssr:celestial-sanctum": "node dist/celestial-sanctum/server/server.mjs"

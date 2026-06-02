@@ -101,3 +101,7 @@ android/app/debug
 # add the file before an iOS build.
 **/GoogleService-Info.plist
 **/google-services.json
+
+# Generated at build time by scripts/gen-firebase-env.mjs from the
+# NG_APP_FIREBASE_* env vars (so the keys live in env/Vercel, not git).
+src/app/core/firebase/firebase.env.generated.ts
