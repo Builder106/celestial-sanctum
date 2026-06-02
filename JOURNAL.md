@@ -6,6 +6,21 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-06-02 — Google sign-in hung in the Capacitor webview #incident
+
+Member sign-in (the new Profile tab) shipped, but "Continue with Google"
+finished Google's OAuth (token + profile fetched, per the device log) then
+stalled forever on "Signing in…" — a pending promise, no error. Two compounding
+causes: I'd set `skipNativeAuth: false` (the plugin attempted a redundant
+native-Firebase sign-in that never resolved), and `getAuth()`'s default
+popup-redirect resolver hangs in the WKWebView (it waits on an `authDomain`
+iframe that never loads), so `signInWithCredential` sat pending. Took two failed
+guesses — the iOS JS console isn't in `os_log` and `--console` only catches
+stderr; an on-screen step indicator finally pinpointed the stuck await. Fix:
+`skipNativeAuth: true` + native `initializeAuth(app, { persistence:
+indexedDBLocalPersistence })` (no resolver); web keeps `getAuth()` for the popup
+fallback. Google sign-in now completes end-to-end on the simulator.
+
 ## 2026-06-01 — Native shell verified on simulator; Firebase launch-crash #incident #milestone
 
 First real run of the iOS app on a simulator (Xcode 26.5, iPhone 17) crashed
