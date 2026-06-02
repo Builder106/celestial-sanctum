@@ -14,7 +14,8 @@ interface TabItem {
 /**
  * Bottom tab bar shown only inside the Capacitor native shell — the
  * primary navigation surface on iOS + Android. Routes through the same
- * Angular router as the web; the tabs map to /, /watch, /calendar, /give.
+ * Angular router as the web; the tabs map to /, /watch, /calendar,
+ * /give, /profile.
  *
  * Safe-area padding uses CSS env(safe-area-inset-bottom) so the bar
  * floats above the iOS home indicator + Android gesture pill without
@@ -24,8 +25,8 @@ interface TabItem {
  * The "More" affordance for About / Visit / Contact / Choir / CZM /
  * Constitution is the mobile menu drawer the parish header already has;
  * native users tap the hamburger icon up top to reach it. That keeps
- * the tab bar at four focused items rather than burying primary actions
- * behind a "More" tab.
+ * the tab bar at five focused items (the fifth, Profile, is member
+ * sign-in) rather than burying primary actions behind a "More" tab.
  */
 @Component({
   selector: 'sanctum-mobile-tab-bar',
@@ -67,5 +68,6 @@ export class MobileTabBar {
     { label: 'Watch', path: '/watch', icon: 'play' },
     { label: 'Calendar', path: '/calendar', icon: 'calendar' },
     { label: 'Give', path: '/give', icon: 'heart' },
+    { label: 'Profile', path: '/profile', icon: 'user' },
   ];
 }

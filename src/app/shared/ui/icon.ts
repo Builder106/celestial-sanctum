@@ -16,6 +16,7 @@ export type IconName =
   | 'map-pin'
   | 'calendar'
   | 'heart'
+  | 'user'
   | 'facebook'
   | 'instagram'
   | 'twitter'
@@ -107,6 +108,10 @@ export type IconName =
         }
         @case ('heart') {
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+        }
+        @case ('user') {
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
         }
         @case ('facebook') {
           <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
