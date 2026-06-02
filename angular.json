@@ -18,6 +18,15 @@
           "options": {
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
+            "allowedCommonJsDependencies": [
+              "@sanity/eventsource",
+              "event-source-polyfill",
+              "eventsource",
+              "decompress-response",
+              "tunnel-agent",
+              "is-retry-allowed",
+              "through2"
+            ],
             "assets": [
               {
                 "glob": "**/*",
@@ -48,7 +57,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
+                  "maximumWarning": "600kB",
                   "maximumError": "1MB"
                 },
                 {

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { SanctumButton } from '../../shared/ui/button';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { Icon } from '../../shared/ui/icon';
@@ -23,7 +22,7 @@ interface StreamingPlatform {
   selector: 'sanctum-choir-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Display, Eyebrow, Icon, SanctumButton, SanctumCascade, SanctumDrawIn, SanctumMark, SanctumReveal, YouTubeEmbed],
+  imports: [Display, Eyebrow, Icon, SanctumCascade, SanctumDrawIn, SanctumMark, SanctumReveal, YouTubeEmbed],
   template: `
     <!-- Hero -->
     <section sanctumCascade stagger="spaced" class="pt-24 md:pt-32 pb-12 px-6 max-w-6xl mx-auto">
