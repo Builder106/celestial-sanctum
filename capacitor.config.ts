@@ -6,7 +6,12 @@ const config: CapacitorConfig = {
   webDir: 'dist/celestial-sanctum/browser',
   plugins: {
     FirebaseAuthentication: {
-      skipNativeAuth: false,
+      // true → the plugin only runs the native provider sheet (Google/Apple)
+      // and returns the credential; AuthService links it into the Firebase JS
+      // SDK via signInWithCredential — the SDK that drives user() /
+      // onAuthStateChanged. With false the plugin ALSO signs into native
+      // Firebase, which hung and left the JS user unset ("stuck on Signing in…").
+      skipNativeAuth: true,
       providers: ['google.com', 'apple.com'],
     },
   },
