@@ -6,6 +6,23 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-06-03 — Six member features shipped behind a clergy/congregation role model #milestone #decision
+
+Built out the member area in one pass (everything except logistics, which needs
+parish-staff input): testimonies (mark a prayer answered → `/testimonies`),
+encouragement notes under prayers, confidential pastoral requests + a
+service/sacrament booking form (both → one `/clergy/inbox`), a daily devotional
+with an in-app clergy editor + a per-member reading streak, and
+notification-category preferences (finishing the half-wired `messaging.service`).
+The spine is a Firestore role model: clergy are a `roles/{uid}` doc (the legacy
+`admins` doc still counts), checked by an `isClergy()` rules helper + a
+signal-based `RoleService` — chose console-managed Firestore docs over Auth
+custom claims for hand-managed clergy (no Admin SDK, instantly editable). Per the
+user's calls: confidential requests are readable by all clergy (not
+shepherd-only), and the devotional is authored in-app (not Sanity). Added an auth
+`ready` flag so member-gated screens can tell "still resolving" from "signed
+out." All six compile clean; rules + the testimonies index deployed in one batch.
+
 ## 2026-06-02 — Prayer wall shipped; member directory deferred (doxxing) #milestone #decision
 
 Built the first member feature — a Firestore-backed prayer wall at `/prayers`:

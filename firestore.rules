@@ -14,12 +14,22 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isAdmin() {
-      return isSignedIn()
-        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    // Clergy/staff are designated by a roles/{uid} doc (preferred) or a legacy
+    // admins/{uid} doc — console-managed, never client-writable. Everyone else
+    // is congregation by default.
+    function isClergy() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/roles/$(request.auth.uid))
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
     }
 
-    // Moderator allowlist — read-your-own for UI gating, console-managed only.
+    // Clergy/staff allowlist — read-your-own for UI gating, console-managed only.
+    match /roles/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+    // Legacy alias for the same idea; kept so existing admin docs still work.
     match /admins/{uid} {
       allow read: if isSignedIn() && request.auth.uid == uid;
       allow write: if false;
@@ -49,21 +59,46 @@ service cloud.firestore {
       // when this same commit creates the member's own prayedBy marker that did
       // NOT exist beforehand — so each member can increment exactly once, ever.
       // Admins may otherwise update (e.g. moderation).
-      allow update: if isAdmin() || (
+      allow update: if isClergy() || (
         isSignedIn()
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prayedCount'])
         && request.resource.data.prayedCount == resource.data.prayedCount + 1
         && !exists(/databases/$(database)/documents/prayers/$(prayerId)/prayedBy/$(request.auth.uid))
         && existsAfter(/databases/$(database)/documents/prayers/$(prayerId)/prayedBy/$(request.auth.uid))
+      ) || (
+        // The author marks their own prayer answered (→ Testimonies).
+        isSignedIn()
+        && resource.data.authorUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['answered', 'answeredAt'])
+        && request.resource.data.answered == true
+        && request.resource.data.answeredAt == request.time
       );
 
       // Authors remove their own; admins remove any.
-      allow delete: if isAdmin()
+      allow delete: if isClergy()
         || (isSignedIn() && resource.data.authorUid == request.auth.uid);
 
       // One "prayed" marker per member; self-owned.
       match /prayedBy/{uid} {
         allow read, create, delete: if isSignedIn() && request.auth.uid == uid;
+      }
+
+      // Encouragement notes — public read; members add their own; authors +
+      // clergy delete; no edits.
+      match /encouragements/{encId} {
+        allow read: if true;
+        allow create: if isSignedIn()
+          && request.resource.data.keys().hasOnly(['text', 'authorUid', 'authorName', 'createdAt'])
+          && request.resource.data.keys().hasAll(['text', 'authorUid', 'authorName', 'createdAt'])
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1
+          && request.resource.data.text.size() <= 280
+          && (request.resource.data.authorName == null || request.resource.data.authorName is string)
+          && request.resource.data.createdAt == request.time;
+        allow delete: if isClergy()
+          || (isSignedIn() && resource.data.authorUid == request.auth.uid);
+        allow update: if false;
       }
     }
 
@@ -72,7 +107,50 @@ service cloud.firestore {
       allow create: if isSignedIn()
         && request.resource.data.reporterUid == request.auth.uid
         && request.resource.data.prayerId is string;
-      allow read, update, delete: if isAdmin();
+      allow read, update, delete: if isClergy();
+    }
+
+    // Confidential member→clergy requests (pastoral + service). Clergy read all;
+    // authors read their own; members create; clergy update (mark handled);
+    // author or clergy delete. Never publicly readable.
+    match /requests/{reqId} {
+      allow read: if isClergy()
+        || (isSignedIn() && resource.data.authorUid == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(
+             ['category', 'kind', 'message', 'name', 'contact', 'authorUid', 'authorEmail', 'status', 'createdAt'])
+        && request.resource.data.keys().hasAll(
+             ['category', 'kind', 'message', 'name', 'contact', 'authorUid', 'authorEmail', 'status', 'createdAt'])
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.category in ['pastoral', 'service']
+        && request.resource.data.kind is string
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 1
+        && request.resource.data.message.size() <= 2000
+        && request.resource.data.name is string
+        && (request.resource.data.contact == null || request.resource.data.contact is string)
+        && (request.resource.data.authorEmail == null || request.resource.data.authorEmail is string)
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time;
+      allow update: if isClergy();
+      allow delete: if isClergy()
+        || (isSignedIn() && resource.data.authorUid == request.auth.uid);
+    }
+
+    // Daily devotional — public read; clergy author/manage.
+    match /devotionals/{devId} {
+      allow read: if true;
+      allow create, update, delete: if isClergy();
+    }
+
+    // Per-member devotional read streak — self-owned.
+    match /devotionalReads/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Per-member push-notification preferences + token — self-owned.
+    match /notificationPrefs/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
     }
   }
 }

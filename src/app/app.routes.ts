@@ -64,5 +64,34 @@ export const routes: Routes = [
     path: 'prayers',
     loadComponent: () => import('./features/prayers/prayers').then((m) => m.PrayerWall),
   },
+  {
+    path: 'testimonies',
+    loadComponent: () => import('./features/testimonies/testimonies').then((m) => m.Testimonies),
+  },
+  {
+    path: 'pastoral',
+    loadComponent: () => import('./features/pastoral/pastoral').then((m) => m.Pastoral),
+  },
+  {
+    path: 'request-service',
+    loadComponent: () => import('./features/services/services').then((m) => m.ServiceRequest),
+  },
+  {
+    path: 'devotional',
+    loadComponent: () => import('./features/devotional/devotional').then((m) => m.DevotionalPage),
+  },
+  {
+    path: 'notifications',
+    loadComponent: () =>
+      import('./features/notifications/notifications').then((m) => m.Notifications),
+  },
+  {
+    path: 'clergy/inbox',
+    loadComponent: () => import('./features/clergy/inbox').then((m) => m.ClergyInbox),
+  },
+  {
+    path: 'clergy/devotional',
+    loadComponent: () => import('./features/clergy/devotional').then((m) => m.ClergyDevotional),
+  },
   { path: '**', loadComponent: placeholder, title: 'Not Found — Celestial Sanctum Parish' },
 ];

@@ -1,9 +1,12 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { type Messaging, getMessaging, getToken, onMessage } from 'firebase/messaging';
 
+import { AuthService } from './auth.service';
 import { FirebaseService } from './firebase.service';
+import { FirestoreService } from './firestore.service';
 import { firebaseVapidKey } from './firebase.config';
 
 export type NotificationCategory =
@@ -40,6 +43,8 @@ export const NOTIFICATION_CATEGORIES: readonly { id: NotificationCategory; label
 @Injectable({ providedIn: 'root' })
 export class MessagingService {
   private readonly firebase = inject(FirebaseService);
+  private readonly firestore = inject(FirestoreService);
+  private readonly auth = inject(AuthService);
 
   /** Last registered FCM token. Cleared on permission revoke. */
   readonly token = signal<string | null>(null);
@@ -98,6 +103,42 @@ export class MessagingService {
     return onMessage(messaging, (payload) => {
       handler((payload.data ?? {}) as Record<string, string>);
     });
+  }
+
+  /** Load the member's saved notification category preferences. */
+  async loadPrefs(): Promise<Record<NotificationCategory, boolean>> {
+    const empty = this.emptyPrefs();
+    const db = this.firestore.db();
+    const user = this.auth.user();
+    if (!db || !user) return empty;
+    try {
+      const cats =
+        (await getDoc(doc(db, 'notificationPrefs', user.uid))).data()?.['categories'] ?? {};
+      const out = { ...empty };
+      for (const c of NOTIFICATION_CATEGORIES) out[c.id] = !!cats[c.id];
+      return out;
+    } catch {
+      return empty;
+    }
+  }
+
+  /** Persist the member's category preferences + current device token. The
+   *  backend reads `notificationPrefs/{uid}` to target the right segment. */
+  async savePrefs(categories: Record<NotificationCategory, boolean>): Promise<void> {
+    const db = this.firestore.db();
+    const user = this.auth.user();
+    if (!db || !user) throw new Error('Not signed in');
+    await setDoc(
+      doc(db, 'notificationPrefs', user.uid),
+      { categories, token: this.token(), updatedAt: serverTimestamp() },
+      { merge: true },
+    );
+  }
+
+  private emptyPrefs(): Record<NotificationCategory, boolean> {
+    const out = {} as Record<NotificationCategory, boolean>;
+    for (const c of NOTIFICATION_CATEGORIES) out[c.id] = false;
+    return out;
   }
 
   private messaging(): Messaging | null {

@@ -9,7 +9,7 @@ import {
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/firebase/auth.service';
-import { PrayerService, type Prayer } from '../../core/firebase/prayer.service';
+import { PrayerService, type Encouragement, type Prayer } from '../../core/firebase/prayer.service';
 import { SeoService } from '../../core/seo/seo.service';
 import { SanctumCascade } from '../../core/motion/cascade.directive';
 import { SanctumReveal } from '../../core/motion/reveal.directive';
@@ -54,6 +54,14 @@ import { MAX_PRAYER_LENGTH, relativeTime, validatePrayerText } from './prayer.ut
       </sanctum-display>
       <p class="font-body text-lg text-sanctum-muted leading-relaxed max-w-xl mx-auto">
         Share a prayer or a praise with the parish family. Every request is held in prayer.
+      </p>
+      <p class="mt-6">
+        <a
+          routerLink="/testimonies"
+          class="font-body text-xs uppercase tracking-[0.22em] font-semibold text-sanctum-blue hover:text-sanctum-burgundy transition-colors"
+        >
+          See answered prayers →
+        </a>
       </p>
     </section>
 
@@ -114,14 +122,14 @@ import { MAX_PRAYER_LENGTH, relativeTime, validatePrayerText } from './prayer.ut
 
       @if (loading()) {
         <p class="text-center font-body text-sanctum-muted py-16">Gathering prayers…</p>
-      } @else if (list().length === 0) {
+      } @else if (activePrayers().length === 0) {
         <div class="text-center py-16">
           <div class="flex justify-center mb-5"><sanctum-mark [size]="40" tone="mono-gold" /></div>
           <p class="font-body text-lg text-sanctum-muted">Be the first to share a prayer.</p>
         </div>
       } @else {
         <div sanctumCascade stagger="tight" class="flex flex-col gap-5">
-          @for (p of list(); track p.id) {
+          @for (p of activePrayers(); track p.id) {
             <sanctum-card variant="paper" class="block">
               <p class="font-body text-lg text-sanctum-ink leading-relaxed whitespace-pre-line">
                 {{ p.text }}
@@ -145,6 +153,13 @@ import { MAX_PRAYER_LENGTH, relativeTime, validatePrayerText } from './prayer.ut
                     {{ prayedIds().has(p.id) ? 'Prayed' : 'I prayed'
                     }}@if (p.prayedCount > 0) { · {{ p.prayedCount }} }
                   </button>
+                  <button
+                    type="button"
+                    (click)="toggleEncourage(p)"
+                    class="font-body text-xs uppercase tracking-[0.18em] text-sanctum-muted hover:text-sanctum-burgundy transition-colors"
+                  >
+                    {{ expandedId() === p.id ? 'Hide' : 'Encourage' }}
+                  </button>
                   @if (auth.signedIn()) {
                     @if (reportedIds().has(p.id)) {
                       <span class="font-body text-xs uppercase tracking-[0.18em] text-sanctum-muted">
@@ -160,6 +175,15 @@ import { MAX_PRAYER_LENGTH, relativeTime, validatePrayerText } from './prayer.ut
                       </button>
                     }
                   }
+                  @if (auth.user()?.uid === p.authorUid) {
+                    <button
+                      type="button"
+                      (click)="markAnswered(p)"
+                      class="font-body text-xs uppercase tracking-[0.18em] text-sanctum-gold hover:text-sanctum-burgundy transition-colors"
+                    >
+                      Mark answered
+                    </button>
+                  }
                   @if (canRemove(p)) {
                     <button
                       type="button"
@@ -171,6 +195,62 @@ import { MAX_PRAYER_LENGTH, relativeTime, validatePrayerText } from './prayer.ut
                   }
                 </div>
               </div>
+
+              @if (expandedId() === p.id) {
+                <div class="mt-5 pt-5 border-t border-sanctum-rule space-y-4">
+                  @for (e of encByPrayer()[p.id] ?? []; track e.id) {
+                    <div class="flex items-start justify-between gap-3">
+                      <div>
+                        <p class="font-body text-sm text-sanctum-ink/85 leading-relaxed whitespace-pre-line">
+                          {{ e.text }}
+                        </p>
+                        <p class="mt-1 font-body text-[11px] uppercase tracking-[0.18em] text-sanctum-muted">
+                          {{ e.authorName || 'A member' }}@if (e.createdAt) { · {{ rel(e.createdAt) }} }
+                        </p>
+                      </div>
+                      @if (canRemoveEnc(e)) {
+                        <button
+                          type="button"
+                          (click)="removeEnc(p, e)"
+                          class="shrink-0 font-body text-[11px] uppercase tracking-[0.18em] text-sanctum-muted hover:text-sanctum-burgundy transition-colors"
+                        >
+                          Remove
+                        </button>
+                      }
+                    </div>
+                  } @empty {
+                    <p class="font-body text-sm text-sanctum-muted">Be the first to encourage.</p>
+                  }
+                  @if (auth.signedIn()) {
+                    <div class="flex items-end gap-2 pt-1">
+                      <textarea
+                        [value]="encInput()"
+                        (input)="encInput.set($any($event.target).value)"
+                        [attr.maxlength]="maxEnc"
+                        rows="2"
+                        placeholder="A word of encouragement or a scripture…"
+                        class="flex-1 resize-none rounded-sm border border-sanctum-rule bg-sanctum-cream/40 p-2.5 font-body text-sm text-sanctum-ink placeholder:text-sanctum-muted focus:border-sanctum-gold focus:outline-none"
+                      ></textarea>
+                      <button
+                        sanctumBtn
+                        variant="primary"
+                        size="sm"
+                        [disabled]="!encInput().trim() || encBusy()"
+                        (click)="submitEnc(p)"
+                      >
+                        Send
+                      </button>
+                    </div>
+                  } @else {
+                    <p class="font-body text-sm text-sanctum-muted">
+                      <a routerLink="/profile" class="text-sanctum-blue hover:text-sanctum-burgundy underline"
+                        >Sign in</a
+                      >
+                      to encourage.
+                    </p>
+                  }
+                </div>
+              }
             </sanctum-card>
           }
         </div>
@@ -199,6 +279,13 @@ export class PrayerWall {
   protected readonly isAdmin = signal(false);
 
   protected readonly canPost = computed(() => validatePrayerText(this.composeText()) === null);
+  protected readonly activePrayers = computed(() => this.list().filter((p) => !p.answered));
+
+  protected readonly maxEnc = 280;
+  protected readonly expandedId = signal<string | null>(null);
+  protected readonly encByPrayer = signal<Record<string, Encouragement[] | undefined>>({});
+  protected readonly encInput = signal('');
+  protected readonly encBusy = signal(false);
 
   constructor() {
     this.seo.set({
@@ -297,6 +384,68 @@ export class PrayerWall {
       this.list.update((l) => l.filter((x) => x.id !== p.id));
     } catch {
       this.error.set('Couldn’t remove that prayer. Please try again.');
+    }
+  }
+
+  protected async markAnswered(p: Prayer): Promise<void> {
+    if (
+      typeof window !== 'undefined' &&
+      !window.confirm('Mark this prayer as answered? It moves to Testimonies.')
+    )
+      return;
+    try {
+      await this.prayers.markAnswered(p.id);
+      this.list.update((l) => l.map((x) => (x.id === p.id ? { ...x, answered: true } : x)));
+    } catch {
+      this.error.set('Couldn’t update that prayer. Please try again.');
+    }
+  }
+
+  protected async toggleEncourage(p: Prayer): Promise<void> {
+    if (this.expandedId() === p.id) {
+      this.expandedId.set(null);
+      return;
+    }
+    this.expandedId.set(p.id);
+    this.encInput.set('');
+    if (!this.encByPrayer()[p.id]) {
+      try {
+        const items = await this.prayers.listEncouragements(p.id);
+        this.encByPrayer.update((m) => ({ ...m, [p.id]: items }));
+      } catch {
+        /* leave unloaded */
+      }
+    }
+  }
+
+  protected async submitEnc(p: Prayer): Promise<void> {
+    const text = this.encInput().trim();
+    if (!text || this.encBusy()) return;
+    this.encBusy.set(true);
+    try {
+      const created = await this.prayers.addEncouragement(p.id, text);
+      this.encByPrayer.update((m) => ({ ...m, [p.id]: [...(m[p.id] ?? []), created] }));
+      this.encInput.set('');
+    } catch {
+      this.error.set('Your note didn’t post. Please try again.');
+    } finally {
+      this.encBusy.set(false);
+    }
+  }
+
+  protected canRemoveEnc(e: Encouragement): boolean {
+    return this.isAdmin() || this.auth.user()?.uid === e.authorUid;
+  }
+
+  protected async removeEnc(p: Prayer, e: Encouragement): Promise<void> {
+    try {
+      await this.prayers.removeEncouragement(p.id, e.id);
+      this.encByPrayer.update((m) => ({
+        ...m,
+        [p.id]: (m[p.id] ?? []).filter((x) => x.id !== e.id),
+      }));
+    } catch {
+      this.error.set('Couldn’t remove that note. Please try again.');
     }
   }
 }

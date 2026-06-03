@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/firebase/auth.service';
+import { RoleService } from '../../core/firebase/role.service';
 import { SeoService } from '../../core/seo/seo.service';
 import { SanctumButton } from '../../shared/ui/button';
 import { Display } from '../../shared/ui/display';
@@ -54,8 +55,16 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
             The parish prayer wall is open — share a request and hold others up in
             prayer. Thank you for being part of the parish.
           </p>
-          <div class="flex flex-col sm:flex-row gap-3 justify-center">
-            <a sanctumBtn variant="primary" size="sm" routerLink="/prayers">Open the Prayer Wall</a>
+          <div class="flex flex-col sm:flex-row flex-wrap gap-3 justify-center">
+            <a sanctumBtn variant="primary" size="sm" routerLink="/prayers">Prayer Wall</a>
+            <a sanctumBtn variant="ghost" size="sm" routerLink="/devotional">Daily devotional</a>
+            <a sanctumBtn variant="ghost" size="sm" routerLink="/pastoral">Contact clergy</a>
+            <a sanctumBtn variant="ghost" size="sm" routerLink="/request-service">Request a service</a>
+            <a sanctumBtn variant="ghost" size="sm" routerLink="/notifications">Notifications</a>
+            @if (role.isClergy()) {
+              <a sanctumBtn variant="ghost" size="sm" routerLink="/clergy/inbox">Clergy inbox</a>
+              <a sanctumBtn variant="ghost" size="sm" routerLink="/clergy/devotional">Write devotional</a>
+            }
             <button sanctumBtn variant="ghost" size="sm" (click)="signOut()">Sign out</button>
           </div>
         </div>
@@ -105,6 +114,7 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
 })
 export class Profile {
   protected readonly auth = inject(AuthService);
+  protected readonly role = inject(RoleService);
   private readonly seo = inject(SeoService);
 
   protected readonly busy = signal<'google' | 'apple' | null>(null);

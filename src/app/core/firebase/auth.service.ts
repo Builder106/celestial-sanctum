@@ -41,11 +41,15 @@ export class AuthService {
   private readonly firebase = inject(FirebaseService);
 
   private readonly userState = signal<User | null>(null);
+  private readonly readyState = signal(false);
 
   /** Current signed-in user, or null. Drives member-gated UI. */
   readonly user = computed(() => this.userState());
   /** Convenience flag for `@if` guards. */
   readonly signedIn = computed(() => this.userState() !== null);
+  /** True once the first auth-state callback has fired (browser only). Lets
+   *  member-gated screens distinguish "still resolving" from "signed out". */
+  readonly ready = computed(() => this.readyState());
 
   private cachedAuth: Auth | null = null;
   private subscribed = false;
@@ -58,7 +62,10 @@ export class AuthService {
     const auth = this.auth();
     if (!auth || this.subscribed) return;
     this.subscribed = true;
-    onAuthStateChanged(auth, (u) => this.userState.set(u));
+    onAuthStateChanged(auth, (u) => {
+      this.userState.set(u);
+      this.readyState.set(true);
+    });
   }
 
   async signInWithGoogle(): Promise<void> {

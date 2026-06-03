@@ -13,10 +13,13 @@ import {
   query,
   runTransaction,
   serverTimestamp,
+  updateDoc,
+  where,
 } from 'firebase/firestore';
 
 import { AuthService } from './auth.service';
 import { FirestoreService } from './firestore.service';
+import { RoleService } from './role.service';
 
 export interface Prayer {
   id: string;
@@ -26,6 +29,17 @@ export interface Prayer {
   authorName: string | null;
   isAnonymous: boolean;
   prayedCount: number;
+  createdAt: Date | null;
+  /** Set when the author marks the prayer answered → it moves to Testimonies. */
+  answered: boolean;
+  answeredAt: Date | null;
+}
+
+export interface Encouragement {
+  id: string;
+  text: string;
+  authorUid: string;
+  authorName: string | null;
   createdAt: Date | null;
 }
 
@@ -41,6 +55,7 @@ export interface Prayer {
 export class PrayerService {
   private readonly firestore = inject(FirestoreService);
   private readonly auth = inject(AuthService);
+  private readonly role = inject(RoleService);
 
   /** Latest prayers, newest first. Returns [] on the server / unconfigured. */
   async list(max = 50): Promise<Prayer[]> {
@@ -75,7 +90,34 @@ export class PrayerService {
       isAnonymous,
       prayedCount: 0,
       createdAt: new Date(),
+      answered: false,
+      answeredAt: null,
     };
+  }
+
+  /** Answered prayers (testimonies), most-recently-answered first. */
+  async listTestimonies(max = 50): Promise<Prayer[]> {
+    const db = this.firestore.db();
+    if (!db) return [];
+    const snap = await getDocs(
+      query(
+        collection(db, 'prayers'),
+        where('answered', '==', true),
+        orderBy('answeredAt', 'desc'),
+        limit(max),
+      ),
+    );
+    return snap.docs.map((d) => this.toPrayer(d.id, d.data()));
+  }
+
+  /** Author marks their own prayer answered → it becomes a testimony. */
+  async markAnswered(prayerId: string): Promise<void> {
+    const db = this.firestore.db();
+    if (!db) throw new Error('Firestore unavailable');
+    await updateDoc(doc(db, 'prayers', prayerId), {
+      answered: true,
+      answeredAt: serverTimestamp(),
+    });
   }
 
   /**
@@ -143,16 +185,55 @@ export class PrayerService {
     await deleteDoc(doc(db, 'prayers', prayerId));
   }
 
-  /** Whether the current member is a moderator (present in /admins). */
-  async isAdmin(): Promise<boolean> {
+  /** Encouragement notes under a prayer, oldest first. */
+  async listEncouragements(prayerId: string, max = 100): Promise<Encouragement[]> {
+    const db = this.firestore.db();
+    if (!db) return [];
+    const snap = await getDocs(
+      query(
+        collection(db, 'prayers', prayerId, 'encouragements'),
+        orderBy('createdAt', 'asc'),
+        limit(max),
+      ),
+    );
+    return snap.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        text: data['text'] ?? '',
+        authorUid: data['authorUid'] ?? '',
+        authorName: data['authorName'] ?? null,
+        createdAt: data['createdAt']?.toDate?.() ?? null,
+      };
+    });
+  }
+
+  /** Add an encouragement note to a prayer (signed-in members). */
+  async addEncouragement(prayerId: string, text: string): Promise<Encouragement> {
     const db = this.firestore.db();
     const user = this.auth.user();
-    if (!db || !user) return false;
-    try {
-      return (await getDoc(doc(db, 'admins', user.uid))).exists();
-    } catch {
-      return false;
-    }
+    if (!db || !user) throw new Error('Not signed in');
+    const trimmed = text.trim();
+    const authorName = user.displayName || 'A member';
+    const ref = await addDoc(collection(db, 'prayers', prayerId, 'encouragements'), {
+      text: trimmed,
+      authorUid: user.uid,
+      authorName,
+      createdAt: serverTimestamp(),
+    });
+    return { id: ref.id, text: trimmed, authorUid: user.uid, authorName, createdAt: new Date() };
+  }
+
+  /** Delete an encouragement (author or clergy). */
+  async removeEncouragement(prayerId: string, encId: string): Promise<void> {
+    const db = this.firestore.db();
+    if (!db) throw new Error('Firestore unavailable');
+    await deleteDoc(doc(db, 'prayers', prayerId, 'encouragements', encId));
+  }
+
+  /** Whether the current member is clergy/staff (can moderate any prayer). */
+  async isAdmin(): Promise<boolean> {
+    return this.role.checkClergy();
   }
 
   private toPrayer(id: string, d: DocumentData): Prayer {
@@ -164,6 +245,8 @@ export class PrayerService {
       isAnonymous: !!d['isAnonymous'],
       prayedCount: d['prayedCount'] ?? 0,
       createdAt: d['createdAt']?.toDate?.() ?? null,
+      answered: !!d['answered'],
+      answeredAt: d['answeredAt']?.toDate?.() ?? null,
     };
   }
 }
