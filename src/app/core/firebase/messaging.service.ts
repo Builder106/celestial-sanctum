@@ -141,6 +141,30 @@ export class MessagingService {
     return out;
   }
 
+  /** Clergy-only: broadcast a push to everyone subscribed to a category. Calls
+   *  the /api/notify Vercel function with the caller's Firebase ID token; the
+   *  server enforces the clergy check. */
+  async broadcast(
+    category: NotificationCategory,
+    title: string,
+    body: string,
+  ): Promise<{ sent: number; failed: number; subscribers: number }> {
+    const user = this.auth.user();
+    if (!user) throw new Error('Not signed in');
+    const idToken = await user.getIdToken();
+    // In the Capacitor webview the app is served from localhost, so target the
+    // deployed origin explicitly; on the web a same-origin relative URL works.
+    const base = Capacitor.isNativePlatform() ? 'https://celestial-sanctum.vercel.app' : '';
+    const res = await fetch(`${base}/api/notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({ category, title, body }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error ?? 'Send failed');
+    return data as { sent: number; failed: number; subscribers: number };
+  }
+
   private messaging(): Messaging | null {
     const app = this.firebase.app();
     if (!app) return null;

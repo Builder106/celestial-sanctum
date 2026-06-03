@@ -64,6 +64,7 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
             @if (role.isClergy()) {
               <a sanctumBtn variant="ghost" size="sm" routerLink="/clergy/inbox">Clergy inbox</a>
               <a sanctumBtn variant="ghost" size="sm" routerLink="/clergy/devotional">Write devotional</a>
+              <a sanctumBtn variant="ghost" size="sm" routerLink="/clergy/notify">Send notification</a>
             }
             <button sanctumBtn variant="ghost" size="sm" (click)="signOut()">Sign out</button>
           </div>

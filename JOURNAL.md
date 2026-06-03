@@ -6,6 +6,22 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-06-03 — Push notification delivery wired via a Vercel API route #milestone #decision
+
+Wired the send-side of notifications. Clients can't push to other devices
+(needs the Admin SDK), and the Firebase project is on the free Spark plan (no
+Cloud Functions), so the sender is a Vercel serverless function — `api/notify.ts`
+— using `firebase-admin`: it verifies the caller's ID token, re-checks the
+clergy role server-side, queries `notificationPrefs` for everyone subscribed to
+a category, and sends an FCM multicast. Chose Vercel over upgrading to Blaze for
+Cloud Functions (stays $0). Trigger is a clergy broadcast screen (`/clergy/notify`)
+now; automatic event-triggers are the deferred half of "both." Two secrets the
+user provided live only in Vercel env (never in git): `FIREBASE_SERVICE_ACCOUNT`
+(the Admin key — also gitignored the downloaded `*firebase-adminsdk*.json` the
+moment it landed in the repo folder, before it could be committed to the public
+repo) and the web-push `NG_APP_FIREBASE_VAPID_KEY`. Still pending for real
+delivery: members opting in, mobile rebuilds, and an APNs key for iOS.
+
 ## 2026-06-03 — Six member features shipped behind a clergy/congregation role model #milestone #decision
 
 Built out the member area in one pass (everything except logistics, which needs
