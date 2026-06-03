@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/firebase/auth.service';
 import { RoleService } from '../../core/firebase/role.service';
 import { DevotionalService, type Devotional } from '../../core/firebase/devotional.service';
+import { MessagingService } from '../../core/firebase/messaging.service';
 import { SeoService } from '../../core/seo/seo.service';
 import { SanctumReveal } from '../../core/motion/reveal.directive';
 import { SanctumButton } from '../../shared/ui/button';
@@ -98,6 +99,16 @@ function todayKey(): string {
               class="mt-2 w-full resize-none rounded-sm border border-sanctum-rule bg-sanctum-cream/40 p-4 font-body text-base text-sanctum-ink placeholder:text-sanctum-muted focus:border-sanctum-gold focus:outline-none"
             ></textarea>
           </label>
+          <label class="flex items-center gap-2 mb-4 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              [checked]="notify()"
+              (change)="notify.set($any($event.target).checked)"
+              class="accent-sanctum-burgundy h-4 w-4"
+            />
+            <span class="font-body text-sm text-sanctum-muted">Notify devotional subscribers when published</span>
+          </label>
+          @if (notice()) { <p class="mb-4 font-body text-sm text-sanctum-gold font-semibold">{{ notice() }}</p> }
           @if (error()) { <p class="mb-4 font-body text-sm text-sanctum-burgundy">{{ error() }}</p> }
           <div class="flex justify-end">
             <button sanctumBtn variant="primary" size="md" [disabled]="!canPublish() || publishing()" (click)="publish()">
@@ -138,6 +149,7 @@ export class ClergyDevotional {
   protected readonly auth = inject(AuthService);
   protected readonly role = inject(RoleService);
   private readonly devotionals = inject(DevotionalService);
+  private readonly messaging = inject(MessagingService);
   private readonly seo = inject(SeoService);
 
   protected readonly date = signal(todayKey());
@@ -146,6 +158,8 @@ export class ClergyDevotional {
   protected readonly body = signal('');
   protected readonly publishing = signal(false);
   protected readonly error = signal<string | null>(null);
+  protected readonly notice = signal<string | null>(null);
+  protected readonly notify = signal(true);
   protected readonly recent = signal<Devotional[]>([]);
   protected readonly loading = signal(true);
 
@@ -186,6 +200,8 @@ export class ClergyDevotional {
     if (!this.canPublish() || this.publishing()) return;
     this.publishing.set(true);
     this.error.set(null);
+    this.notice.set(null);
+    const devTitle = this.title().trim();
     try {
       await this.devotionals.create({
         date: this.date(),
@@ -193,10 +209,30 @@ export class ClergyDevotional {
         reference: this.reference(),
         body: this.body(),
       });
+      this.recent.set(await this.devotionals.recent());
+
+      let message = 'Published.';
+      if (this.notify()) {
+        // Auto-trigger: notify members subscribed to "daily-devotional".
+        // Best-effort — a notify failure must not undo the publish.
+        try {
+          const r = await this.messaging.broadcast(
+            'daily-devotional',
+            'Daily Devotional',
+            devTitle || "Today's devotional is ready.",
+          );
+          message +=
+            r.subscribers > 0
+              ? ` Notified ${r.sent} of ${r.subscribers} subscriber(s).`
+              : ' No devotional subscribers yet.';
+        } catch {
+          message += ' (Couldn’t send the notification.)';
+        }
+      }
+      this.notice.set(message);
       this.title.set('');
       this.reference.set('');
       this.body.set('');
-      this.recent.set(await this.devotionals.recent());
     } catch {
       this.error.set('Couldn’t publish. Please try again.');
     } finally {

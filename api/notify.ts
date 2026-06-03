@@ -16,7 +16,13 @@ import { getMessaging } from 'firebase-admin/messaging';
 //     file's contents), from Firebase Console → Project Settings →
 //     Service accounts → Generate new private key.
 
-const CATEGORIES = new Set(['service-reminder', 'choir-release', 'new-sermon', 'parish-news']);
+const CATEGORIES = new Set([
+  'service-reminder',
+  'choir-release',
+  'new-sermon',
+  'parish-news',
+  'daily-devotional',
+]);
 const MAX_TITLE = 120;
 const MAX_BODY = 500;
 

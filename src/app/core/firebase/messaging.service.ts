@@ -13,13 +13,15 @@ export type NotificationCategory =
   | 'service-reminder'
   | 'choir-release'
   | 'new-sermon'
-  | 'parish-news';
+  | 'parish-news'
+  | 'daily-devotional';
 
 export const NOTIFICATION_CATEGORIES: readonly { id: NotificationCategory; label: string; description: string }[] = [
   { id: 'service-reminder', label: 'Service reminders', description: 'Sunday worship + Thursday midnight vigil.' },
   { id: 'choir-release', label: 'Choir releases', description: 'New EPs, singles, and music videos.' },
   { id: 'new-sermon', label: 'New sermons', description: 'When a sermon hits the parish YouTube.' },
   { id: 'parish-news', label: 'Parish news', description: 'Special services, announcements, and harvests.' },
+  { id: 'daily-devotional', label: 'Daily devotional', description: "A nudge when the day's devotional is posted." },
 ] as const;
 
 /**
@@ -135,7 +137,7 @@ export class MessagingService {
     );
   }
 
-  private emptyPrefs(): Record<NotificationCategory, boolean> {
+  emptyPrefs(): Record<NotificationCategory, boolean> {
     const out = {} as Record<NotificationCategory, boolean>;
     for (const c of NOTIFICATION_CATEGORIES) out[c.id] = false;
     return out;

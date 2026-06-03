@@ -98,12 +98,9 @@ export class Notifications {
   private readonly seo = inject(SeoService);
 
   protected readonly cats = NOTIFICATION_CATEGORIES;
-  protected readonly categories = signal<Record<NotificationCategory, boolean>>({
-    'service-reminder': false,
-    'choir-release': false,
-    'new-sermon': false,
-    'parish-news': false,
-  });
+  protected readonly categories = signal<Record<NotificationCategory, boolean>>(
+    this.messaging.emptyPrefs(),
+  );
   protected readonly loading = signal(true);
   protected readonly enabling = signal(false);
   protected readonly saved = signal(false);
