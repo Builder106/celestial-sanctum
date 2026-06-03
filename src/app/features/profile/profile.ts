@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/firebase/auth.service';
 import { SeoService } from '../../core/seo/seo.service';
 import { SanctumButton } from '../../shared/ui/button';
@@ -14,14 +15,14 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
  * Signed out: Google + Apple sign-in (Apple is required on iOS by App
  * Store HIG 4.8 once any social provider is offered; it lights up once
  * the Apple provider + capability are configured). Signed in: the
- * member's identity + sign-out. Member-only features (prayer wall,
- * directory) gate on AuthService.user() and ship later.
+ * member's identity + sign-out, and a link into the prayer wall. The
+ * member directory is deferred (doxxing risk — see JOURNAL).
  */
 @Component({
   selector: 'sanctum-profile',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Display, Eyebrow, Icon, SanctumButton, SanctumMark, SanctumReveal],
+  imports: [RouterLink, Display, Eyebrow, Icon, SanctumButton, SanctumMark, SanctumReveal],
   template: `
     <section
       sanctumReveal
@@ -50,10 +51,13 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
             <p class="font-body text-base text-sanctum-muted mb-8">{{ u?.email }}</p>
           }
           <p class="font-body text-sm text-sanctum-muted leading-relaxed mb-8 max-w-sm mx-auto">
-            Member features — a prayer wall and the parish directory — are on the
-            way. Thank you for being part of the parish.
+            The parish prayer wall is open — share a request and hold others up in
+            prayer. Thank you for being part of the parish.
           </p>
-          <button sanctumBtn variant="ghost" size="sm" (click)="signOut()">Sign out</button>
+          <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <a sanctumBtn variant="primary" size="sm" routerLink="/prayers">Open the Prayer Wall</a>
+            <button sanctumBtn variant="ghost" size="sm" (click)="signOut()">Sign out</button>
+          </div>
         </div>
       } @else {
         <div class="text-center mb-10">
@@ -61,8 +65,7 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
           <sanctum-eyebrow class="mb-4">Parish members</sanctum-eyebrow>
           <sanctum-display size="lg" class="mb-4"><h1>Sign in</h1></sanctum-display>
           <p class="font-body text-lg text-sanctum-muted leading-relaxed max-w-md mx-auto">
-            Sign in to your parish account. Member features — a prayer wall and the
-            parish directory — are coming soon.
+            Sign in to your parish account to share on the community prayer wall.
           </p>
         </div>
 

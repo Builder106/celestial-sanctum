@@ -60,5 +60,9 @@ export const routes: Routes = [
     path: 'profile',
     loadComponent: () => import('./features/profile/profile').then((m) => m.Profile),
   },
+  {
+    path: 'prayers',
+    loadComponent: () => import('./features/prayers/prayers').then((m) => m.PrayerWall),
+  },
   { path: '**', loadComponent: placeholder, title: 'Not Found — Celestial Sanctum Parish' },
 ];

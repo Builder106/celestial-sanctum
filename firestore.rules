@@ -1,0 +1,78 @@
+rules_version = '2';
+
+// Celestial Sanctum — Firestore security rules.
+//
+// Prayer wall (v1): public read · members post · members "pray" once each ·
+// authors + admins delete · members report. Moderators are designated by the
+// presence of an /admins/{uid} document, which is added from the Firebase
+// console and is never writable by clients.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Moderator allowlist — read-your-own for UI gating, console-managed only.
+    match /admins/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /prayers/{prayerId} {
+      // Public wall — readable by anyone, signed in or not.
+      allow read: if true;
+
+      // Members post their own prayers: exactly these fields, server-stamped,
+      // zeroed count, bounded text. authorName is null when posting anonymously.
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(
+             ['text', 'authorUid', 'authorName', 'isAnonymous', 'prayedCount', 'createdAt'])
+        && request.resource.data.keys().hasAll(
+             ['text', 'authorUid', 'authorName', 'isAnonymous', 'prayedCount', 'createdAt'])
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 3
+        && request.resource.data.text.size() <= 1000
+        && request.resource.data.isAnonymous is bool
+        && (request.resource.data.authorName == null || request.resource.data.authorName is string)
+        && request.resource.data.prayedCount == 0
+        && request.resource.data.createdAt == request.time;
+
+      // The only member-facing mutation is the "I prayed" counter: +1, and only
+      // when this same commit creates the member's own prayedBy marker that did
+      // NOT exist beforehand — so each member can increment exactly once, ever.
+      // Admins may otherwise update (e.g. moderation).
+      allow update: if isAdmin() || (
+        isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prayedCount'])
+        && request.resource.data.prayedCount == resource.data.prayedCount + 1
+        && !exists(/databases/$(database)/documents/prayers/$(prayerId)/prayedBy/$(request.auth.uid))
+        && existsAfter(/databases/$(database)/documents/prayers/$(prayerId)/prayedBy/$(request.auth.uid))
+      );
+
+      // Authors remove their own; admins remove any.
+      allow delete: if isAdmin()
+        || (isSignedIn() && resource.data.authorUid == request.auth.uid);
+
+      // One "prayed" marker per member; self-owned.
+      match /prayedBy/{uid} {
+        allow read, create, delete: if isSignedIn() && request.auth.uid == uid;
+      }
+    }
+
+    // Reports — members flag a prayer for clergy; only admins read/triage.
+    match /reports/{reportId} {
+      allow create: if isSignedIn()
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.prayerId is string;
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}

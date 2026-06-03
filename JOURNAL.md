@@ -6,6 +6,41 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-06-02 — Prayer wall shipped; member directory deferred (doxxing) #milestone #decision
+
+Built the first member feature — a Firestore-backed prayer wall at `/prayers`:
+public read, signed-in members post (with an anonymous toggle), tap "I prayed"
+once each, report, and delete their own; moderators (members in `/admins`) delete
+any. Stood up the Firestore layer from scratch — `FirestoreService` with
+auto-detect long-polling (the default WebChannel transport stalls in the
+Capacitor WebView, same class as the Auth hang), security rules, `firebase.json`
+— keeping user-generated content in Firestore and Sanity reserved for editorial
+content. The "I prayed" counter is guarded server-side by a rules invariant: the
++1 only commits when the same write creates the member's own `prayedBy` marker
+that didn't exist before, so it's one tap per member, ever. Deferred the parish
+*directory*: the user flagged that a member-to-member roster "could lead to
+doxxing" — which is right — so only a curated leadership/ministries directory
+(Sanity, no member PII) is even on the table, and that's filed for later. Profile
+copy updated to drop the directory promise.
+
+## 2026-06-02 — Android app verified on emulator; branded sign-in renders #milestone #incident
+
+Brought the app up on Android for the first time (Pixel AVD, API 35, JDK 21) to
+confirm the Google/Apple sign-in logos render like they now do on iOS.
+`gradlew assembleDebug` succeeded in 3m22s; the app boots to the celestial-blue
+hero and the Profile tab shows the multicolor Google "G" and the Apple mark on
+the two sign-in buttons — parity with iOS. Two log red herrings worth
+remembering: a `FATAL EXCEPTION` in `com.google.android.gms.persistent`
+(`NetworkCapability 37 out of range`, thrown during FCM push registration) reads
+like an app crash but is a bundled-Play-Services-vs-emulator-platform bug — it
+kills a GMS service, not the app (which stays alive and focused); and the
+`/_vercel/insights/script.js` 404s are expected (those resolve only behind
+Vercel's edge). Also: the first `monkey`-based launch left focus on the
+launcher — an explicit `am start -n …/.MainActivity` was needed. Getting here at
+all required a disk cleanup first: the emulator needs 7.4 GB free and the
+Drive-hosted project had the machine ~97% full (cleared Claude/Docker orphans +
+unused Android system images to reach 28 GB).
+
 ## 2026-06-02 — Google sign-in hung in the Capacitor webview #incident
 
 Member sign-in (the new Profile tab) shipped, but "Continue with Google"

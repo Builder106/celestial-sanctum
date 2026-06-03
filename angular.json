@@ -25,7 +25,9 @@
               "decompress-response",
               "tunnel-agent",
               "is-retry-allowed",
-              "through2"
+              "through2",
+              "@grpc/grpc-js",
+              "@grpc/proto-loader"
             ],
             "assets": [
               {

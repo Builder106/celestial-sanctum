@@ -8,6 +8,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   { label: 'About', path: '/about' },
   { label: 'Watch & Listen', path: '/watch' },
   { label: 'Calendar', path: '/calendar' },
+  { label: 'Prayer Wall', path: '/prayers' },
   { label: 'Give', path: '/give' },
 ];
 
