@@ -80,21 +80,40 @@ export class PrayerService {
 
   /**
    * Record that the current member prayed for a request — once each. Creates
-   * the member's prayedBy marker and increments the counter atomically; no-ops
-   * if they already prayed.
+   * the member's prayedBy marker and increments the counter atomically.
+   * Returns true if this call counted a new prayer, false if they'd already
+   * prayed (so callers don't double-count the on-screen number).
    */
-  async pray(prayerId: string): Promise<void> {
+  async pray(prayerId: string): Promise<boolean> {
     const db = this.firestore.db();
     const user = this.auth.user();
     if (!db || !user) throw new Error('Not signed in');
     const prayerRef = doc(db, 'prayers', prayerId);
     const markerRef = doc(db, 'prayers', prayerId, 'prayedBy', user.uid);
-    await runTransaction(db, async (tx) => {
+    return runTransaction(db, async (tx) => {
       const marker = await tx.get(markerRef);
-      if (marker.exists()) return;
+      if (marker.exists()) return false; // already prayed — no double count
       tx.set(markerRef, { at: serverTimestamp() });
       tx.update(prayerRef, { prayedCount: increment(1) });
+      return true;
     });
+  }
+
+  /** Of the given prayers, the IDs the current member has already prayed for. */
+  async prayedPrayerIds(prayerIds: readonly string[]): Promise<Set<string>> {
+    const db = this.firestore.db();
+    const user = this.auth.user();
+    if (!db || !user || prayerIds.length === 0) return new Set();
+    const results = await Promise.all(
+      prayerIds.map(async (id) => {
+        try {
+          return (await getDoc(doc(db, 'prayers', id, 'prayedBy', user.uid))).exists() ? id : null;
+        } catch {
+          return null;
+        }
+      }),
+    );
+    return new Set(results.filter((id): id is string => id !== null));
   }
 
   /** Whether the current member already prayed for this request. */

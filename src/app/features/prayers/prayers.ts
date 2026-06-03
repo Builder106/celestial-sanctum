@@ -135,7 +135,7 @@ import { MAX_PRAYER_LENGTH, relativeTime, validatePrayerText } from './prayer.ut
                   <button
                     type="button"
                     (click)="pray(p)"
-                    [disabled]="busyPray() === p.id"
+                    [disabled]="busyPray() === p.id || prayedIds().has(p.id)"
                     [attr.aria-pressed]="prayedIds().has(p.id)"
                     class="inline-flex items-center gap-1.5 font-body text-xs uppercase tracking-[0.18em] transition-colors hover:text-sanctum-burgundy"
                     [class.text-sanctum-burgundy]="prayedIds().has(p.id)"
@@ -223,6 +223,9 @@ export class PrayerWall {
       const [items, admin] = await Promise.all([this.prayers.list(), this.prayers.isAdmin()]);
       this.list.set(items);
       this.isAdmin.set(admin);
+      if (this.auth.signedIn()) {
+        this.prayedIds.set(await this.prayers.prayedPrayerIds(items.map((p) => p.id)));
+      }
     } catch {
       this.error.set('We couldn’t load the prayer wall just now. Please try again.');
     } finally {
@@ -259,11 +262,13 @@ export class PrayerWall {
     }
     this.busyPray.set(p.id);
     try {
-      await this.prayers.pray(p.id);
+      const counted = await this.prayers.pray(p.id);
       this.prayedIds.update((s) => new Set(s).add(p.id));
-      this.list.update((l) =>
-        l.map((x) => (x.id === p.id ? { ...x, prayedCount: x.prayedCount + 1 } : x)),
-      );
+      if (counted) {
+        this.list.update((l) =>
+          l.map((x) => (x.id === p.id ? { ...x, prayedCount: x.prayedCount + 1 } : x)),
+        );
+      }
     } catch {
       /* best-effort; leave count/state unchanged on failure */
     } finally {
