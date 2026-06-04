@@ -24,6 +24,13 @@ export const NOTIFICATION_CATEGORIES: readonly { id: NotificationCategory; label
   { id: 'daily-devotional', label: 'Daily devotional', description: "A nudge when the day's devotional is posted." },
 ] as const;
 
+/** A push received while the app is in the foreground. */
+export interface ForegroundMessage {
+  title?: string;
+  body?: string;
+  data: Record<string, string>;
+}
+
 /**
  * Push-notification subscription management.
  *
@@ -91,10 +98,14 @@ export class MessagingService {
    * foreground). Consumers can call this to surface in-app toasts
    * or update a notifications list.
    */
-  onForeground(handler: (data: Record<string, string>) => void): () => void {
+  onForeground(handler: (msg: ForegroundMessage) => void): () => void {
     if (Capacitor.isNativePlatform()) {
       const sub = FirebaseMessaging.addListener('notificationReceived', (evt) => {
-        handler((evt.notification.data ?? {}) as Record<string, string>);
+        handler({
+          title: evt.notification.title ?? undefined,
+          body: evt.notification.body ?? undefined,
+          data: (evt.notification.data ?? {}) as Record<string, string>,
+        });
       });
       return () => {
         void sub.then((s) => s.remove());
@@ -103,7 +114,11 @@ export class MessagingService {
     const messaging = this.messaging();
     if (!messaging) return () => undefined;
     return onMessage(messaging, (payload) => {
-      handler((payload.data ?? {}) as Record<string, string>);
+      handler({
+        title: payload.notification?.title ?? undefined,
+        body: payload.notification?.body ?? undefined,
+        data: (payload.data ?? {}) as Record<string, string>,
+      });
     });
   }
 
