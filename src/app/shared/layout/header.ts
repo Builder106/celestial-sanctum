@@ -61,9 +61,9 @@ import { PRIMARY_NAV } from './nav-data';
             (click)="openSearch()"
             title="Search · ⌘K"
             aria-label="Search the parish"
-            class="p-2 text-sanctum-ink hover:text-sanctum-burgundy transition-colors"
+            class="group p-2 text-sanctum-ink hover:text-sanctum-burgundy transition-colors"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true" class="transition-transform duration-200 ease-out motion-safe:group-hover:scale-110 motion-safe:group-active:scale-95">
               <circle cx="11" cy="11" r="7" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
