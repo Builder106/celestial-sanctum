@@ -105,6 +105,7 @@ android/app/debug
 # Generated at build time by scripts/gen-firebase-env.mjs from the
 # NG_APP_FIREBASE_* env vars (so the keys live in env/Vercel, not git).
 src/app/core/firebase/firebase.env.generated.ts
+public/firebase-messaging-sw.js
 
 # Firebase Admin SDK service-account keys — SECRET (full backend access).
 # NEVER commit. The deployed API reads the key from the FIREBASE_SERVICE_ACCOUNT

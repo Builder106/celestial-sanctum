@@ -6,6 +6,19 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-06-04 — Web push never actually worked — missing service worker #incident
+
+Setting up the end-to-end notification test surfaced that web push could never
+have fired: FCM's `getToken()` requires a `/firebase-messaging-sw.js` service
+worker, and the project had none — a web member's "Enable notifications" would
+have failed silently at token registration. Generated it from
+`gen-firebase-env.mjs` (same pattern as the env module: public config inlined
+from `NG_APP_FIREBASE_*`, gitignored, regenerated every build, pinned to the
+installed Firebase version) — a minimal SW that inits messaging so `getToken`
+works and notification-payload messages auto-display in the background (no
+`onBackgroundMessage`, to avoid duplicate notifications). Native push is
+unaffected (the Capacitor plugin owns the token). iOS still needs an APNs key.
+
 ## 2026-06-03 — Push notification delivery wired via a Vercel API route #milestone #decision
 
 Wired the send-side of notifications. Clients can't push to other devices
