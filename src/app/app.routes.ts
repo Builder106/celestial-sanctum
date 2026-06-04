@@ -101,5 +101,9 @@ export const routes: Routes = [
     path: 'clergy/notify',
     loadComponent: () => import('./features/clergy/notify').then((m) => m.ClergyNotify),
   },
+  {
+    path: 'clergy/reports',
+    loadComponent: () => import('./features/clergy/reports').then((m) => m.ClergyReports),
+  },
   { path: '**', loadComponent: placeholder, title: 'Not Found — Celestial Sanctum Parish' },
 ];

@@ -5,6 +5,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getCountFromServer,
   getDoc,
   getDocs,
   increment,
@@ -41,6 +42,16 @@ export interface Encouragement {
   authorUid: string;
   authorName: string | null;
   createdAt: Date | null;
+}
+
+/** A flagged prayer, with its report docs grouped together. */
+export interface ReportGroup {
+  prayerId: string;
+  reportIds: string[];
+  count: number;
+  lastReportedAt: Date | null;
+  /** The flagged prayer's current content, or null if it's already removed. */
+  prayer: Prayer | null;
 }
 
 /**
@@ -176,6 +187,73 @@ export class PrayerService {
       reporterUid: user.uid,
       createdAt: serverTimestamp(),
     });
+  }
+
+  /** Reports grouped by prayer, newest-reported first, with each prayer's
+   *  current content attached (null if already removed). Clergy only — the
+   *  list query is denied for everyone else by the rules. */
+  async listReports(max = 100): Promise<ReportGroup[]> {
+    const db = this.firestore.db();
+    if (!db) return [];
+    const snap = await getDocs(
+      query(collection(db, 'reports'), orderBy('createdAt', 'desc'), limit(max)),
+    );
+    const groups = new Map<string, { reportIds: string[]; last: Date | null }>();
+    snap.forEach((d) => {
+      const pid = d.get('prayerId');
+      if (typeof pid !== 'string') return;
+      const at = d.get('createdAt')?.toDate?.() ?? null;
+      const g = groups.get(pid) ?? { reportIds: [], last: null };
+      g.reportIds.push(d.id);
+      if (at && (!g.last || at > g.last)) g.last = at;
+      groups.set(pid, g);
+    });
+    const result = await Promise.all(
+      [...groups.entries()].map(async ([prayerId, g]) => {
+        let prayer: Prayer | null = null;
+        try {
+          const pd = await getDoc(doc(db, 'prayers', prayerId));
+          if (pd.exists()) prayer = this.toPrayer(pd.id, pd.data());
+        } catch {
+          /* ignore */
+        }
+        return {
+          prayerId,
+          reportIds: g.reportIds,
+          count: g.reportIds.length,
+          lastReportedAt: g.last,
+          prayer,
+        };
+      }),
+    );
+    result.sort((a, b) => (b.lastReportedAt?.getTime() ?? 0) - (a.lastReportedAt?.getTime() ?? 0));
+    return result;
+  }
+
+  /** Count of open report docs (dashboard badge). */
+  async reportCount(): Promise<number> {
+    const db = this.firestore.db();
+    if (!db) return 0;
+    try {
+      return (await getCountFromServer(collection(db, 'reports'))).data().count;
+    } catch {
+      return 0;
+    }
+  }
+
+  /** Clear a prayer's reports but keep the prayer. */
+  async dismissReports(reportIds: readonly string[]): Promise<void> {
+    const db = this.firestore.db();
+    if (!db) throw new Error('Firestore unavailable');
+    await Promise.all(reportIds.map((id) => deleteDoc(doc(db, 'reports', id))));
+  }
+
+  /** Remove a flagged prayer and clear its reports. */
+  async removeReportedPrayer(prayerId: string, reportIds: readonly string[]): Promise<void> {
+    const db = this.firestore.db();
+    if (!db) throw new Error('Firestore unavailable');
+    await deleteDoc(doc(db, 'prayers', prayerId));
+    await Promise.all(reportIds.map((id) => deleteDoc(doc(db, 'reports', id))));
   }
 
   /** Delete a prayer (author or admin, per the security rules). */

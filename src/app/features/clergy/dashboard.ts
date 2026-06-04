@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/firebase/auth.service';
 import { RoleService } from '../../core/firebase/role.service';
 import { RequestService } from '../../core/firebase/request.service';
+import { PrayerService } from '../../core/firebase/prayer.service';
 import { SeoService } from '../../core/seo/seo.service';
 import { SanctumCascade } from '../../core/motion/cascade.directive';
 import { SanctumReveal } from '../../core/motion/reveal.directive';
@@ -72,6 +73,23 @@ import { SanctumMark } from '../../shared/ui/sanctum-mark';
           </a>
 
           <a
+            routerLink="/clergy/reports"
+            class="block p-7 rounded-sm border border-sanctum-rule bg-sanctum-paper hover:border-sanctum-gold hover:-translate-y-0.5 transition-all duration-300"
+          >
+            <div class="flex items-center justify-between gap-3 mb-2">
+              <h2 class="font-display text-2xl text-sanctum-ink">Reports</h2>
+              @if (reportCount() > 0) {
+                <span class="font-body text-[11px] uppercase tracking-[0.18em] text-sanctum-cream bg-sanctum-burgundy rounded-sm px-2 py-1">
+                  {{ reportCount() }}
+                </span>
+              }
+            </div>
+            <p class="font-body text-sm text-sanctum-muted leading-relaxed">
+              Prayers members have flagged for review.
+            </p>
+          </a>
+
+          <a
             routerLink="/clergy/devotional"
             class="block p-7 rounded-sm border border-sanctum-rule bg-sanctum-paper hover:border-sanctum-gold hover:-translate-y-0.5 transition-all duration-300"
           >
@@ -109,10 +127,12 @@ export class ClergyDashboard {
   protected readonly auth = inject(AuthService);
   protected readonly role = inject(RoleService);
   private readonly requests = inject(RequestService);
+  private readonly prayers = inject(PrayerService);
   private readonly seo = inject(SeoService);
 
   protected readonly loading = signal(true);
   protected readonly newCount = signal(0);
+  protected readonly reportCount = signal(0);
   protected readonly firstName = computed(() => {
     const name = this.auth.user()?.displayName ?? '';
     return name.split(' ')[0] ?? '';
@@ -137,8 +157,12 @@ export class ClergyDashboard {
       if (this.auth.signedIn()) {
         await this.role.refresh();
         if (this.role.isClergy()) {
-          const inbox = await this.requests.listInbox();
+          const [inbox, reports] = await Promise.all([
+            this.requests.listInbox(),
+            this.prayers.reportCount(),
+          ]);
           this.newCount.set(inbox.filter((r) => r.status === 'new').length);
+          this.reportCount.set(reports);
         }
       }
     } catch {
