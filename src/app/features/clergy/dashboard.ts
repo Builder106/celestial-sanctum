@@ -36,13 +36,24 @@ import { SanctumMark } from '../../shared/ui/sanctum-mark';
       <sanctum-eyebrow class="mb-5">Clergy</sanctum-eyebrow>
       <sanctum-display size="xl" class="mb-4"><h1>Parish <span class="italic text-sanctum-burgundy">dashboard.</span></h1></sanctum-display>
       @if (firstName()) {
-        <p class="font-body text-lg text-sanctum-muted">Welcome back, {{ firstName() }}.</p>
+        <p class="font-body text-lg text-sanctum-muted">
+          Welcome back, <span class="font-semibold text-sanctum-burgundy">{{ firstName() }}</span>.
+        </p>
       }
     </section>
 
     <section class="px-6 pb-24 max-w-4xl mx-auto">
       @if (loading()) {
-        <p class="text-center font-body text-sanctum-muted py-16">Loading…</p>
+        <!-- Skeleton tiles so the layout appears instantly while auth + role
+             resolve, instead of a bare "Loading…" on an empty page. -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5" aria-hidden="true">
+          @for (i of [0, 1, 2, 3]; track i) {
+            <div class="p-7 rounded-sm border border-sanctum-rule bg-sanctum-paper">
+              <div class="h-7 w-40 mb-3 rounded-sm bg-sanctum-rule/60 animate-pulse"></div>
+              <div class="h-4 w-full rounded-sm bg-sanctum-rule/40 animate-pulse"></div>
+            </div>
+          }
+        </div>
       } @else if (!auth.signedIn()) {
         <div class="max-w-md mx-auto text-center p-8 rounded-sm border border-sanctum-rule bg-sanctum-cream/60">
           <p class="font-body text-base text-sanctum-ink/85 mb-5">Sign in with a clergy account to open the dashboard.</p>
@@ -150,25 +161,37 @@ export class ClergyDashboard {
   }
 
   private async init(): Promise<void> {
-    try {
-      for (let i = 0; i < 50 && !this.auth.ready(); i++) {
-        await new Promise((r) => setTimeout(r, 100));
-      }
-      if (this.auth.signedIn()) {
+    // Resolve auth + role first, then reveal the tiles immediately. The badge
+    // counts are fetched separately (loadCounts) so a couple of Firestore
+    // reads don't hold the whole dashboard on a spinner — they trickle into
+    // the badges once they arrive.
+    for (let i = 0; i < 50 && !this.auth.ready(); i++) {
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    if (this.auth.signedIn()) {
+      try {
         await this.role.refresh();
-        if (this.role.isClergy()) {
-          const [inbox, reports] = await Promise.all([
-            this.requests.listInbox(),
-            this.prayers.reportCount(),
-          ]);
-          this.newCount.set(inbox.filter((r) => r.status === 'new').length);
-          this.reportCount.set(reports);
-        }
+      } catch {
+        /* role read failed — treated as non-clergy */
       }
+    }
+    this.loading.set(false);
+    if (this.auth.signedIn() && this.role.isClergy()) {
+      void this.loadCounts();
+    }
+  }
+
+  /** Non-blocking: populate the "new requests" + "reports" badges. */
+  private async loadCounts(): Promise<void> {
+    try {
+      const [inbox, reports] = await Promise.all([
+        this.requests.listInbox(),
+        this.prayers.reportCount(),
+      ]);
+      this.newCount.set(inbox.filter((r) => r.status === 'new').length);
+      this.reportCount.set(reports);
     } catch {
-      /* ignore — non-clergy reads are denied by the rules */
-    } finally {
-      this.loading.set(false);
+      /* non-clergy reads are denied by the rules */
     }
   }
 }
