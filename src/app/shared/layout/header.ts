@@ -54,31 +54,19 @@ import { PRIMARY_NAV } from './nav-data';
         </nav>
 
         <div class="hidden lg:flex items-center gap-3">
-          <!-- Search trigger styled as a faux input field so it reads as
-               a search bar at a glance. Cream interior + gold-hairline
-               border match the rest of the parish chrome. -->
-          <!-- aria-label omitted intentionally so the visible text
-               ("Search the parish… ⌘K") becomes the accessible name —
-               that satisfies WCAG 2.5.3 (label-in-name) for voice-
-               control users. The ⌘K kbd is decorative for keyboard
-               discoverability; the title attribute gives pointer
-               users the same hint on hover. -->
+          <!-- Compact search trigger (also ⌘K). aria-label provides the
+               accessible name; title shows the shortcut hint on hover. -->
           <button
             type="button"
             (click)="openSearch()"
             title="Search · ⌘K"
-            class="group inline-flex items-center gap-2.5 w-[190px] xl:w-[240px] px-3 py-2 rounded-sm border border-sanctum-rule bg-sanctum-paper hover:border-sanctum-gold transition-colors"
+            aria-label="Search the parish"
+            class="p-2 text-sanctum-ink hover:text-sanctum-burgundy transition-colors"
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="15" height="15" class="shrink-0 text-sanctum-muted group-hover:text-sanctum-ink transition-colors" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
               <circle cx="11" cy="11" r="7" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
-            <span class="flex-1 text-left font-body text-[12px] text-sanctum-muted group-hover:text-sanctum-ink transition-colors truncate">
-              Search the parish…
-            </span>
-            <!-- Full muted-color (no /80 opacity reduction) so the kbd
-                 clears WCAG AA 4.5:1 contrast against the cream pill bg. -->
-            <kbd class="shrink-0 font-mono text-[10px] text-sanctum-muted group-hover:text-sanctum-ink transition-colors border border-sanctum-rule rounded-sm px-1 py-px bg-sanctum-cream/60">⌘K</kbd>
           </button>
 
           <a

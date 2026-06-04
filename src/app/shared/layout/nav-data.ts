@@ -6,7 +6,7 @@ export interface NavItem {
 export const PRIMARY_NAV: readonly NavItem[] = [
   { label: 'Visit', path: '/visit' },
   { label: 'About', path: '/about' },
-  { label: 'Watch & Listen', path: '/watch' },
+  { label: 'Watch', path: '/watch' },
   { label: 'Calendar', path: '/calendar' },
   { label: 'Prayer Wall', path: '/prayers' },
   { label: 'Give', path: '/give' },
