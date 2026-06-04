@@ -10,6 +10,7 @@ import { Card } from '../../shared/ui/card';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
+import { SanctumSelect } from '../../shared/ui/select';
 
 const KINDS = [
   { value: 'naming', label: 'Naming ceremony' },
@@ -31,7 +32,7 @@ const KINDS = [
   selector: 'sanctum-service-request',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Card, Display, Eyebrow, SanctumButton, SanctumMark, SanctumReveal],
+  imports: [RouterLink, Card, Display, Eyebrow, SanctumButton, SanctumMark, SanctumReveal, SanctumSelect],
   template: `
     <section sanctumReveal class="pt-24 md:pt-32 pb-10 px-6 max-w-2xl mx-auto text-center">
       <div class="flex justify-center mb-6"><sanctum-mark [size]="52" /></div>
@@ -68,15 +69,13 @@ const KINDS = [
             <span class="font-body text-xs uppercase tracking-[0.22em] text-sanctum-gold font-semibold">
               Which service?
             </span>
-            <select
+            <sanctum-select
+              class="mt-3 block"
+              ariaLabel="Which service?"
+              [options]="kinds"
               [value]="kind()"
-              (change)="kind.set($any($event.target).value)"
-              class="mt-3 w-full rounded-sm border border-sanctum-rule bg-sanctum-cream/40 p-3 font-body text-base text-sanctum-ink focus:border-sanctum-gold focus:outline-none"
-            >
-              @for (k of kinds; track k.value) {
-                <option [value]="k.value">{{ k.label }}</option>
-              }
-            </select>
+              (valueChange)="kind.set($any($event))"
+            />
           </label>
           <label class="block mb-5">
             <span class="font-body text-xs uppercase tracking-[0.22em] text-sanctum-gold font-semibold">

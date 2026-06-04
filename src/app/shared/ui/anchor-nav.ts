@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   input,
   OnDestroy,
@@ -9,6 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { SanctumSelect } from './select';
 
 export interface AnchorItem {
   id: string;
@@ -19,6 +21,7 @@ export interface AnchorItem {
   selector: 'sanctum-anchor-nav',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [SanctumSelect],
   template: `
     <nav
       class="hidden lg:block sticky top-32 self-start"
@@ -49,26 +52,24 @@ export interface AnchorItem {
 
     <!-- Mobile fallback: select dropdown -->
     <div class="lg:hidden sticky top-[71px] z-20 -mx-6 px-6 py-4 bg-sanctum-cream/90 backdrop-blur-md border-b border-sanctum-rule">
-      <label class="sr-only" for="anchor-jump">Jump to section</label>
-      <div class="relative">
-        <select
-          id="anchor-jump"
-          class="w-full appearance-none pl-4 pr-10 py-3 bg-sanctum-paper border border-sanctum-rule font-body text-sm text-sanctum-ink focus:outline-none focus:border-sanctum-gold rounded-sm"
-          (change)="onSelectJump($event)"
-        >
-          <option value="">Jump to section…</option>
-          @for (item of items(); track item.id) {
-            <option [value]="item.id">{{ item.label }}</option>
-          }
-        </select>
-        <span class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sanctum-muted">▾</span>
-      </div>
+      <sanctum-select
+        tone="paper"
+        ariaLabel="Jump to section"
+        placeholder="Jump to section…"
+        [options]="jumpOptions()"
+        [value]="jumpValue()"
+        (valueChange)="jumpTo($event)"
+      />
     </div>
   `,
 })
 export class AnchorNav implements AfterViewInit, OnDestroy {
   readonly items = input.required<AnchorItem[]>();
 
+  protected readonly jumpOptions = computed(() =>
+    this.items().map((i) => ({ value: i.id, label: i.label })),
+  );
+  protected readonly jumpValue = signal('');
   protected readonly activeId = signal<string>('');
   private platformId = inject(PLATFORM_ID);
   private observer: IntersectionObserver | null = null;
@@ -94,11 +95,12 @@ export class AnchorNav implements AfterViewInit, OnDestroy {
     this.activeId.set(id);
   }
 
-  protected onSelectJump(event: Event): void {
-    const id = (event.target as HTMLSelectElement).value;
-    if (!id) return;
+  protected jumpTo(id: string): void {
+    // Reset to the placeholder so the control reads "Jump to section…" again.
+    this.jumpValue.set('');
+    if (!id || !isPlatformBrowser(this.platformId)) return;
     const el = document.getElementById(id);
-    if (!el || !isPlatformBrowser(this.platformId)) return;
+    if (!el) return;
     const top = el.getBoundingClientRect().top + window.scrollY - 100;
     window.scrollTo({ top, behavior: 'smooth' });
     history.replaceState(null, '', `#${id}`);

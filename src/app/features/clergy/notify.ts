@@ -22,6 +22,7 @@ import { Card } from '../../shared/ui/card';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
+import { SanctumSelect } from '../../shared/ui/select';
 
 /**
  * Clergy broadcast — compose a push and send it to everyone subscribed to a
@@ -31,7 +32,7 @@ import { SanctumMark } from '../../shared/ui/sanctum-mark';
   selector: 'sanctum-clergy-notify',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Card, Display, Eyebrow, SanctumButton, SanctumMark, SanctumReveal],
+  imports: [RouterLink, Card, Display, Eyebrow, SanctumButton, SanctumMark, SanctumReveal, SanctumSelect],
   template: `
     <section sanctumReveal class="pt-24 md:pt-32 pb-10 px-6 max-w-3xl mx-auto text-center">
       <div class="flex justify-center mb-6"><sanctum-mark [size]="52" /></div>
@@ -56,15 +57,13 @@ import { SanctumMark } from '../../shared/ui/sanctum-mark';
         <sanctum-card variant="paper" class="block">
           <label class="block mb-5">
             <span class="font-body text-xs uppercase tracking-[0.22em] text-sanctum-gold font-semibold">Audience</span>
-            <select
+            <sanctum-select
+              class="mt-3 block"
+              ariaLabel="Audience"
+              [options]="catOptions"
               [value]="category()"
-              (change)="category.set($any($event.target).value)"
-              class="mt-3 w-full rounded-sm border border-sanctum-rule bg-sanctum-cream/40 p-3 font-body text-base text-sanctum-ink focus:border-sanctum-gold focus:outline-none"
-            >
-              @for (c of cats; track c.id) {
-                <option [value]="c.id">{{ c.label }}</option>
-              }
-            </select>
+              (valueChange)="category.set($any($event))"
+            />
           </label>
           <label class="block mb-5">
             <span class="font-body text-xs uppercase tracking-[0.22em] text-sanctum-gold font-semibold">Title</span>
@@ -110,7 +109,10 @@ export class ClergyNotify {
   private readonly messaging = inject(MessagingService);
   private readonly seo = inject(SeoService);
 
-  protected readonly cats = NOTIFICATION_CATEGORIES;
+  protected readonly catOptions = NOTIFICATION_CATEGORIES.map((c) => ({
+    value: c.id,
+    label: c.label,
+  }));
   protected readonly category = signal<NotificationCategory>('parish-news');
   protected readonly title = signal('');
   protected readonly body = signal('');

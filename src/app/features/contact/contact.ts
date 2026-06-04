@@ -6,6 +6,7 @@ import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { Icon } from '../../shared/ui/icon';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
+import { SanctumSelect } from '../../shared/ui/select';
 import { MapEmbed } from '../../shared/embeds/map-embed';
 import { SanctumReveal } from '../../core/motion/reveal.directive';
 import { SanctumCascade } from '../../core/motion/cascade.directive';
@@ -23,7 +24,7 @@ type Topic =
   selector: 'sanctum-contact',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, Display, Eyebrow, Icon, MapEmbed, SanctumButton, SanctumCascade, SanctumDrawIn, SanctumMark, SanctumReveal],
+  imports: [FormsModule, Display, Eyebrow, Icon, MapEmbed, SanctumButton, SanctumCascade, SanctumDrawIn, SanctumMark, SanctumReveal, SanctumSelect],
   template: `
     <!-- Page hero -->
     <section sanctumCascade stagger="spaced" class="pt-24 md:pt-32 pb-12 px-6 max-w-6xl mx-auto">
@@ -110,25 +111,18 @@ type Topic =
               </div>
 
               <div class="mb-5">
-                <label
-                  for="contact-topic"
+                <span
                   class="block font-body text-xs uppercase tracking-[0.25em] text-sanctum-blue font-semibold mb-2"
                 >
                   Topic
-                </label>
-                <div class="relative">
-                  <select
-                    id="contact-topic"
-                    name="topic"
-                    [(ngModel)]="topic"
-                    class="w-full appearance-none pl-4 pr-10 py-3 bg-sanctum-cream border border-sanctum-rule rounded-sm font-body text-base text-sanctum-ink focus:outline-none focus:border-sanctum-gold transition-colors"
-                  >
-                    @for (t of topics; track t) {
-                      <option [value]="t">{{ t }}</option>
-                    }
-                  </select>
-                  <span class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-sanctum-muted">▾</span>
-                </div>
+                </span>
+                <sanctum-select
+                  tone="cream-solid"
+                  ariaLabel="Topic"
+                  [options]="topicOptions"
+                  [value]="topic"
+                  (valueChange)="topic = $any($event)"
+                />
               </div>
 
               <div class="mb-6">
@@ -275,6 +269,7 @@ export class Contact {
     'Volunteer',
     'Other',
   ];
+  protected readonly topicOptions = this.topics.map((t) => ({ value: t, label: t }));
 
   protected name = '';
   protected email = '';

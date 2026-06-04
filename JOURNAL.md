@@ -6,6 +6,19 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-06-04 — Replaced native `<select>` with a custom listbox #decision
+
+The clergy "Send a notification" Audience picker popped the OS-drawn `<select>`
+menu — white system chrome that breaks the cream/ink aesthetic the moment you
+open it. Built one reusable `SanctumSelect` (accessible listbox: arrow/Home/End
++ Enter/Escape, `aria-activedescendant`, outside-click dismiss, selected check,
+gold-on-open border, motion-safe panel animation) and swapped it into all five
+native selects — notify, pastoral, service-request, contact topic, and the
+mobile anchor-nav jump. Chose a hand-rolled component over a headless-UI dep to
+keep the bundle lean; net effect was actually −3kB (removed per-field markup +
+chevrons outweighed the shared component). The options panel only renders
+client-side (open() starts false), so there's nothing for SSR to mismatch on.
+
 ## 2026-06-04 — Web push never actually worked — missing service worker #incident
 
 Setting up the end-to-end notification test surfaced that web push could never
