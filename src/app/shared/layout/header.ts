@@ -20,7 +20,7 @@ import { PRIMARY_NAV } from './nav-data';
            inside max-w-6xl, which left a big empty gutter on ultrawide).
            Padding controls inset; the rest of the page still uses
            max-w-6xl for body content + footer. -->
-      <div class="px-6 md:px-10 py-5 flex justify-between items-center gap-6">
+      <div class="pl-4 pr-6 md:pl-6 md:pr-10 py-5 flex justify-between items-center gap-6">
         <a
           routerLink="/"
           class="group flex items-center gap-4 text-sanctum-ink"
@@ -87,6 +87,14 @@ import { PRIMARY_NAV } from './nav-data';
             Contact
             <sanctum-icon name="chevron-right" [size]="12" />
           </a>
+
+          <a
+            routerLink="/profile"
+            class="inline-flex items-center gap-1.5 whitespace-nowrap font-body text-xs uppercase tracking-[0.2em] font-semibold text-sanctum-ink hover:text-sanctum-burgundy transition-colors"
+          >
+            <sanctum-icon name="user" [size]="16" />
+            Sign in
+          </a>
         </div>
         }
 
@@ -140,6 +148,13 @@ import { PRIMARY_NAV } from './nav-data';
             (click)="closeMobile()"
           >
             Contact
+          </a>
+          <a
+            routerLink="/profile"
+            class="block py-5 font-display text-3xl text-sanctum-ink hover:text-sanctum-burgundy transition-colors border-b border-sanctum-rule"
+            (click)="closeMobile()"
+          >
+            Sign in
           </a>
         </nav>
       </div>

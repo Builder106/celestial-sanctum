@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, afterNextRender, computed, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Injector,
+  afterNextRender,
+  computed,
+  inject,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map, startWith } from 'rxjs/operators';
@@ -7,7 +14,6 @@ import { Footer } from './shared/layout/footer';
 import { MobileTabBar } from './shared/layout/mobile-tab-bar';
 import { SearchPalette } from './shared/search/search-palette';
 import { PlatformService } from './core/platform/platform.service';
-import { MessagingService } from './core/firebase/messaging.service';
 import { ToastService, Toasts } from './shared/ui/toast';
 import { routeFade } from './core/motion/route-animations';
 
@@ -23,15 +29,19 @@ import { routeFade } from './core/motion/route-animations';
 export class App {
   private readonly router = inject(Router);
   private readonly platformService = inject(PlatformService);
-  private readonly messaging = inject(MessagingService);
   private readonly toast = inject(ToastService);
+  private readonly injector = inject(Injector);
 
   constructor() {
-    // Surface foreground pushes as in-app toasts; the OS / FCM service worker
-    // shows background ones. Browser-only via afterNextRender; no-ops without
-    // a registered token.
-    afterNextRender(() => {
-      this.messaging.onForeground((m) => this.toast.show(m.title ?? 'Notification', m.body ?? ''));
+    // Surface foreground pushes as in-app toasts (the OS / FCM service worker
+    // shows background ones). MessagingService is dynamically imported so
+    // firebase/messaging stays out of the initial bundle; browser-only, and a
+    // no-op until a token is registered.
+    afterNextRender(async () => {
+      const { MessagingService } = await import('./core/firebase/messaging.service');
+      this.injector
+        .get(MessagingService)
+        .onForeground((m) => this.toast.show(m.title ?? 'Notification', m.body ?? ''));
     });
   }
 
