@@ -86,6 +86,10 @@ export const routes: Routes = [
       import('./features/notifications/notifications').then((m) => m.Notifications),
   },
   {
+    path: 'clergy',
+    loadComponent: () => import('./features/clergy/dashboard').then((m) => m.ClergyDashboard),
+  },
+  {
     path: 'clergy/inbox',
     loadComponent: () => import('./features/clergy/inbox').then((m) => m.ClergyInbox),
   },
