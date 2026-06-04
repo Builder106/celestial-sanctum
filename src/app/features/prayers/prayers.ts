@@ -19,6 +19,7 @@ import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { Icon } from '../../shared/ui/icon';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
+import { ConfirmService } from '../../shared/ui/confirm';
 import { MAX_PRAYER_LENGTH, relativeTime, validatePrayerText } from './prayer.util';
 
 /**
@@ -260,6 +261,7 @@ import { MAX_PRAYER_LENGTH, relativeTime, validatePrayerText } from './prayer.ut
 })
 export class PrayerWall {
   protected readonly auth = inject(AuthService);
+  private readonly confirmSvc = inject(ConfirmService);
   private readonly prayers = inject(PrayerService);
   private readonly seo = inject(SeoService);
 
@@ -378,7 +380,12 @@ export class PrayerWall {
   }
 
   protected async remove(p: Prayer): Promise<void> {
-    if (typeof window !== 'undefined' && !window.confirm('Remove this prayer?')) return;
+    const ok = await this.confirmSvc.confirm({
+      message: 'Remove this prayer?',
+      confirmLabel: 'Remove',
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await this.prayers.remove(p.id);
       this.list.update((l) => l.filter((x) => x.id !== p.id));
@@ -388,11 +395,11 @@ export class PrayerWall {
   }
 
   protected async markAnswered(p: Prayer): Promise<void> {
-    if (
-      typeof window !== 'undefined' &&
-      !window.confirm('Mark this prayer as answered? It moves to Testimonies.')
-    )
-      return;
+    const ok = await this.confirmSvc.confirm({
+      message: 'Mark this prayer as answered? It moves to Testimonies.',
+      confirmLabel: 'Mark answered',
+    });
+    if (!ok) return;
     try {
       await this.prayers.markAnswered(p.id);
       this.list.update((l) => l.map((x) => (x.id === p.id ? { ...x, answered: true } : x)));

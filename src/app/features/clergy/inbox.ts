@@ -11,6 +11,7 @@ import { Card } from '../../shared/ui/card';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
+import { ConfirmService } from '../../shared/ui/confirm';
 import { relativeTime } from '../prayers/prayer.util';
 
 /**
@@ -108,6 +109,7 @@ import { relativeTime } from '../prayers/prayer.util';
 })
 export class ClergyInbox {
   protected readonly auth = inject(AuthService);
+  private readonly confirmSvc = inject(ConfirmService);
   protected readonly role = inject(RoleService);
   private readonly requests = inject(RequestService);
   private readonly seo = inject(SeoService);
@@ -161,7 +163,12 @@ export class ClergyInbox {
   }
 
   protected async remove(r: ParishRequest): Promise<void> {
-    if (typeof window !== 'undefined' && !window.confirm('Delete this request?')) return;
+    const ok = await this.confirmSvc.confirm({
+      message: 'Delete this request?',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await this.requests.remove(r.id);
       this.list.update((l) => l.filter((x) => x.id !== r.id));

@@ -19,6 +19,7 @@ import { Card } from '../../shared/ui/card';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
+import { ConfirmService } from '../../shared/ui/confirm';
 
 function todayKey(): string {
   const d = new Date();
@@ -147,6 +148,7 @@ function todayKey(): string {
 })
 export class ClergyDevotional {
   protected readonly auth = inject(AuthService);
+  private readonly confirmSvc = inject(ConfirmService);
   protected readonly role = inject(RoleService);
   private readonly devotionals = inject(DevotionalService);
   private readonly messaging = inject(MessagingService);
@@ -241,7 +243,12 @@ export class ClergyDevotional {
   }
 
   protected async remove(d: Devotional): Promise<void> {
-    if (typeof window !== 'undefined' && !window.confirm('Delete this devotional?')) return;
+    const ok = await this.confirmSvc.confirm({
+      message: 'Delete this devotional?',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await this.devotionals.remove(d.id);
       this.recent.update((l) => l.filter((x) => x.id !== d.id));

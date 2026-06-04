@@ -11,6 +11,7 @@ import { Card } from '../../shared/ui/card';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
+import { ConfirmService } from '../../shared/ui/confirm';
 import { relativeTime } from '../prayers/prayer.util';
 
 /**
@@ -94,6 +95,7 @@ import { relativeTime } from '../prayers/prayer.util';
 })
 export class ClergyReports {
   protected readonly auth = inject(AuthService);
+  private readonly confirmSvc = inject(ConfirmService);
   protected readonly role = inject(RoleService);
   private readonly prayers = inject(PrayerService);
   private readonly seo = inject(SeoService);
@@ -135,7 +137,12 @@ export class ClergyReports {
   }
 
   protected async removePrayer(g: ReportGroup): Promise<void> {
-    if (typeof window !== 'undefined' && !window.confirm('Remove this prayer for everyone?')) return;
+    const ok = await this.confirmSvc.confirm({
+      message: 'Remove this prayer for everyone?',
+      confirmLabel: 'Remove',
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await this.prayers.removeReportedPrayer(g.prayerId, g.reportIds);
       this.list.update((l) => l.filter((x) => x.prayerId !== g.prayerId));

@@ -6,6 +6,18 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-06-04 — Replaced `window.confirm()` with a promise-based modal #decision
+
+Same theme as the select swap: the prayer wall's "Mark answered" / "Remove"
+actions popped the OS `window.confirm()` box — system chrome over the cream
+page. Added a `ConfirmService` + single `<sanctum-confirm />` host (mirrors the
+toast pattern) exposing `confirm(opts): Promise<boolean>`; the dialog is a
+parish-styled modal with backdrop blur, pop-in animation, Escape/backdrop to
+cancel, and focus moved to the confirm button on open + restored on close.
+Migrated all five `window.confirm` call sites (prayer remove/mark-answered,
+clergy report-remove, inbox delete, devotional delete). With this and the
+listbox, no native browser UI chrome remains in the member/clergy flows.
+
 ## 2026-06-04 — Replaced native `<select>` with a custom listbox #decision
 
 The clergy "Send a notification" Audience picker popped the OS-drawn `<select>`

@@ -15,13 +15,14 @@ import { MobileTabBar } from './shared/layout/mobile-tab-bar';
 import { SearchPalette } from './shared/search/search-palette';
 import { PlatformService } from './core/platform/platform.service';
 import { ToastService, Toasts } from './shared/ui/toast';
+import { ConfirmDialog } from './shared/ui/confirm';
 import { routeFade } from './core/motion/route-animations';
 
 @Component({
   selector: 'sanctum-root',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, Header, Footer, MobileTabBar, SearchPalette, Toasts],
+  imports: [RouterOutlet, Header, Footer, MobileTabBar, SearchPalette, Toasts, ConfirmDialog],
   templateUrl: './app.html',
   styleUrl: './app.css',
   animations: [routeFade],
