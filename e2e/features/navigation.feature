@@ -1,6 +1,6 @@
 Feature: Primary navigation routes between pages
 
-  All five top-level routes (Visit, About, Watch & Listen, Calendar, Give)
+  All five top-level routes (Visit, About, Watch, Calendar, Give)
   reachable from the header. Each loads its own SSR'd content + page title.
 
   Scenario: Visiting /visit from the nav loads the first-time-visitor page
@@ -19,7 +19,7 @@ Feature: Primary navigation routes between pages
 
   Scenario: Visiting /watch from the nav loads the media hub
     Given I am on the home page
-    When I navigate to "Watch & Listen" from the main nav
+    When I navigate to "Watch" from the main nav
     Then the URL is "/watch"
     And the page title contains "Watch"
     And I see the text "Sanctum Podcast"
