@@ -4,6 +4,7 @@ import { Icon } from '../ui/icon';
 import { SanctumMark } from '../ui/sanctum-mark';
 import { PlatformService } from '../../core/platform/platform.service';
 import { SearchService } from '../../core/search/search.service';
+import { SessionState } from '../../core/firebase/session-state.service';
 import { PRIMARY_NAV } from './nav-data';
 
 @Component({
@@ -91,9 +92,19 @@ import { PRIMARY_NAV } from './nav-data';
           <a
             routerLink="/profile"
             class="inline-flex items-center gap-1.5 whitespace-nowrap font-body text-xs uppercase tracking-[0.2em] font-semibold text-sanctum-ink hover:text-sanctum-burgundy transition-colors"
+            [attr.aria-label]="session.signedIn() ? 'Your profile' : 'Sign in'"
           >
-            <sanctum-icon name="user" [size]="16" />
-            Sign in
+            @if (session.signedIn() && session.photoURL()) {
+              <img
+                [src]="session.photoURL()"
+                referrerpolicy="no-referrer"
+                alt=""
+                class="w-7 h-7 rounded-full object-cover border border-sanctum-rule"
+              />
+            } @else {
+              <sanctum-icon name="user" [size]="16" />
+              {{ session.signedIn() ? 'Profile' : 'Sign in' }}
+            }
           </a>
         </div>
         }
@@ -154,7 +165,7 @@ import { PRIMARY_NAV } from './nav-data';
             class="block py-5 font-display text-3xl text-sanctum-ink hover:text-sanctum-burgundy transition-colors border-b border-sanctum-rule"
             (click)="closeMobile()"
           >
-            Sign in
+            {{ session.signedIn() ? 'Profile' : 'Sign in' }}
           </a>
         </nav>
       </div>
@@ -164,6 +175,7 @@ import { PRIMARY_NAV } from './nav-data';
 export class Header {
   private readonly search = inject(SearchService);
   private readonly platform = inject(PlatformService);
+  protected readonly session = inject(SessionState);
   protected readonly nav = PRIMARY_NAV;
   protected readonly mobileOpen = signal(false);
 

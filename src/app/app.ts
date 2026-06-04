@@ -38,7 +38,14 @@ export class App {
     // firebase/messaging stays out of the initial bundle; browser-only, and a
     // no-op until a token is registered.
     afterNextRender(async () => {
-      const { MessagingService } = await import('./core/firebase/messaging.service');
+      // Restore the session app-wide (so the header reflects signed-in state
+      // via SessionState) and wire foreground push toasts. Both services are
+      // dynamically imported so firebase stays out of the initial bundle.
+      const [{ AuthService }, { MessagingService }] = await Promise.all([
+        import('./core/firebase/auth.service'),
+        import('./core/firebase/messaging.service'),
+      ]);
+      this.injector.get(AuthService).init();
       this.injector
         .get(MessagingService)
         .onForeground((m) => this.toast.show(m.title ?? 'Notification', m.body ?? ''));

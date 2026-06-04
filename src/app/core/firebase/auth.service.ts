@@ -15,6 +15,7 @@ import {
 } from 'firebase/auth';
 
 import { FirebaseService } from './firebase.service';
+import { SessionState } from './session-state.service';
 
 /**
  * Member authentication for the parish app.
@@ -39,6 +40,7 @@ import { FirebaseService } from './firebase.service';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly firebase = inject(FirebaseService);
+  private readonly session = inject(SessionState);
 
   private readonly userState = signal<User | null>(null);
   private readonly readyState = signal(false);
@@ -65,6 +67,7 @@ export class AuthService {
     onAuthStateChanged(auth, (u) => {
       this.userState.set(u);
       this.readyState.set(true);
+      this.session.set(u ? { photoURL: u.photoURL, displayName: u.displayName } : null);
     });
   }
 
