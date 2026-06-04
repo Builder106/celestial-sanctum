@@ -6,7 +6,7 @@ import { SeoService } from '../../core/seo/seo.service';
 import { SanctumButton } from '../../shared/ui/button';
 import { Display } from '../../shared/ui/display';
 import { Eyebrow } from '../../shared/ui/eyebrow';
-import { Icon } from '../../shared/ui/icon';
+import { Icon, type IconName } from '../../shared/ui/icon';
 import { SanctumMark } from '../../shared/ui/sanctum-mark';
 import { SanctumReveal } from '../../core/motion/reveal.directive';
 
@@ -25,49 +25,100 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, Display, Eyebrow, Icon, SanctumButton, SanctumMark, SanctumReveal],
   template: `
-    <section
-      sanctumReveal
-      class="pt-24 md:pt-32 pb-24 px-6 max-w-xl mx-auto min-h-[70vh] flex flex-col justify-center"
-    >
+    <section sanctumReveal class="pt-24 md:pt-32 pb-24 px-6">
       @if (auth.signedIn()) {
         @let u = auth.user();
-        <div class="bg-sanctum-paper border border-sanctum-rule rounded-sm p-8 md:p-10 text-center">
-          <div class="flex justify-center mb-6">
+        <div class="max-w-2xl mx-auto">
+          <!-- Identity header -->
+          <div
+            class="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left gap-5 pb-8 mb-8 border-b border-sanctum-rule"
+          >
             @if (u?.photoURL) {
               <img
                 [src]="u?.photoURL"
                 alt=""
                 referrerpolicy="no-referrer"
-                class="w-20 h-20 rounded-full object-cover border border-sanctum-rule"
+                class="w-16 h-16 rounded-full object-cover border border-sanctum-rule shrink-0"
               />
             } @else {
-              <sanctum-mark [size]="56" />
+              <sanctum-mark [size]="52" />
+            }
+            <div class="min-w-0">
+              <sanctum-eyebrow class="mb-2">Signed in</sanctum-eyebrow>
+              <sanctum-display size="sm" class="mb-1">
+                <h1>{{ u?.displayName || 'Welcome' }}</h1>
+              </sanctum-display>
+              @if (u?.email) {
+                <p class="font-body text-sm text-sanctum-muted truncate">{{ u?.email }}</p>
+              }
+            </div>
+          </div>
+
+          <!-- Member actions -->
+          <sanctum-eyebrow class="mb-4">Your parish</sanctum-eyebrow>
+          <div class="grid gap-3 sm:grid-cols-2">
+            @for (a of actions; track a.path) {
+              <a
+                [routerLink]="a.path"
+                class="group flex items-start gap-4 p-5 rounded-sm border border-sanctum-rule bg-sanctum-paper hover:border-sanctum-gold hover:shadow-sm transition-all"
+              >
+                <span
+                  class="flex items-center justify-center w-10 h-10 rounded-full bg-sanctum-cream text-sanctum-burgundy shrink-0"
+                >
+                  <sanctum-icon [name]="a.icon" [size]="18" />
+                </span>
+                <span class="min-w-0">
+                  <span class="flex items-center gap-1.5 font-body text-base font-semibold text-sanctum-ink">
+                    {{ a.label }}
+                    <sanctum-icon
+                      name="arrow-right"
+                      [size]="14"
+                      class="text-sanctum-gold opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0"
+                    />
+                  </span>
+                  <span class="mt-0.5 block font-body text-sm text-sanctum-muted leading-snug">{{ a.desc }}</span>
+                </span>
+              </a>
             }
           </div>
-          <sanctum-eyebrow class="mb-4">Signed in</sanctum-eyebrow>
-          <sanctum-display size="md" class="mb-2">
-            <h1>{{ u?.displayName || 'Welcome' }}</h1>
-          </sanctum-display>
-          @if (u?.email) {
-            <p class="font-body text-base text-sanctum-muted mb-8">{{ u?.email }}</p>
+
+          <!-- Clergy tools — set apart by role -->
+          @if (role.isClergy()) {
+            <div class="mt-10 pt-8 border-t border-sanctum-rule">
+              <sanctum-eyebrow class="mb-4">Parish leadership</sanctum-eyebrow>
+              <a
+                routerLink="/clergy"
+                class="group flex items-start gap-4 p-5 rounded-sm border border-sanctum-blue/30 bg-sanctum-blue/5 hover:border-sanctum-blue hover:shadow-sm transition-all"
+              >
+                <span
+                  class="flex items-center justify-center w-10 h-10 rounded-full bg-sanctum-blue/10 text-sanctum-blue shrink-0"
+                >
+                  <sanctum-icon name="church" [size]="18" />
+                </span>
+                <span class="min-w-0">
+                  <span class="flex items-center gap-1.5 font-body text-base font-semibold text-sanctum-ink">
+                    Clergy dashboard
+                    <sanctum-icon
+                      name="arrow-right"
+                      [size]="14"
+                      class="text-sanctum-blue opacity-0 -translate-x-1 transition-all group-hover:opacity-100 group-hover:translate-x-0"
+                    />
+                  </span>
+                  <span class="mt-0.5 block font-body text-sm text-sanctum-muted leading-snug">
+                    Pastoral requests, prayer-wall reports, devotionals, and broadcasts.
+                  </span>
+                </span>
+              </a>
+            </div>
           }
-          <p class="font-body text-sm text-sanctum-muted leading-relaxed mb-8 max-w-sm mx-auto">
-            The parish prayer wall is open — share a request and hold others up in
-            prayer. Thank you for being part of the parish.
-          </p>
-          <div class="flex flex-col sm:flex-row flex-wrap gap-3 justify-center">
-            <a sanctumBtn variant="primary" size="sm" routerLink="/prayers">Prayer Wall</a>
-            <a sanctumBtn variant="ghost" size="sm" routerLink="/devotional">Daily devotional</a>
-            <a sanctumBtn variant="ghost" size="sm" routerLink="/pastoral">Contact clergy</a>
-            <a sanctumBtn variant="ghost" size="sm" routerLink="/request-service">Request a service</a>
-            <a sanctumBtn variant="ghost" size="sm" routerLink="/notifications">Notifications</a>
-            @if (role.isClergy()) {
-              <a sanctumBtn variant="secondary" size="sm" routerLink="/clergy">Clergy dashboard</a>
-            }
+
+          <!-- Sign out — quiet, separated -->
+          <div class="mt-10 pt-6 border-t border-sanctum-rule flex justify-center">
             <button sanctumBtn variant="ghost" size="sm" (click)="signOut()">Sign out</button>
           </div>
         </div>
       } @else {
+        <div class="max-w-xl mx-auto min-h-[60vh] flex flex-col justify-center">
         <div class="text-center mb-10">
           <div class="flex justify-center mb-6"><sanctum-mark [size]="56" /></div>
           <sanctum-eyebrow class="mb-4">Parish members</sanctum-eyebrow>
@@ -107,6 +158,7 @@ import { SanctumReveal } from '../../core/motion/reveal.directive';
             {{ error() }}
           </p>
         }
+        </div>
       }
     </section>
   `,
@@ -118,6 +170,16 @@ export class Profile {
 
   protected readonly busy = signal<'google' | 'apple' | null>(null);
   protected readonly error = signal<string | null>(null);
+
+  /** Member entry points, rendered as the dashboard action tiles. */
+  protected readonly actions: readonly { path: string; icon: IconName; label: string; desc: string }[] =
+    [
+      { path: '/prayers', icon: 'heart', label: 'Prayer Wall', desc: 'Share a request or hold others up in prayer.' },
+      { path: '/devotional', icon: 'pen', label: 'Daily devotional', desc: "Today's reading and your reflection streak." },
+      { path: '/pastoral', icon: 'mail', label: 'Contact clergy', desc: 'Send a private note to the parish clergy.' },
+      { path: '/request-service', icon: 'calendar', label: 'Request a service', desc: 'Baptisms, weddings, blessings, and intentions.' },
+      { path: '/notifications', icon: 'bell', label: 'Notifications', desc: 'Choose what the parish notifies you about.' },
+    ];
 
   constructor() {
     this.seo.set({
