@@ -12,6 +12,15 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Tailwind v4 dropped the implicit `cursor: pointer` on buttons (it now follows
+   the browser default). Restore it for interactive, non-disabled controls so
+   plain <button>s read as clickable. `:not(:disabled)` leaves disabled buttons
+   on their own cursor (e.g. the `disabled:cursor-not-allowed` utility). */
+button:not(:disabled),
+[role="button"] {
+  cursor: pointer;
+}
+
 ::selection {
   background: var(--color-sanctum-gold);
   color: var(--color-sanctum-ink);
