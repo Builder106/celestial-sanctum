@@ -6,6 +6,20 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-06-04 — Push opt-in reported "on" off permission, not a token #incident
+
+Live notification test: a clergy send to "Parish news" returned 0 subscribers
+even though the opt-in showed "✓ Push notifications are on." Root cause — the
+indicator was keyed on `Notification.permission`, but `requestAndRegister` set
+`permission = granted` *before* calling `getToken()`; on Safari (the test
+browser) `getToken()` throws, so the token stayed null while the UI claimed
+success. The subscription saved with `token: null`, and `/api/notify` counts
+device tokens, so zero recipients. Fix: `requestAndRegister` now guards with
+`isSupported()`, throws a distinct message per failure mode, and only a real
+token flips the "on" state; the Notifications page surfaces the error and
+silently re-registers on load (healing stale null-token docs). FCM web push
+still isn't supported on Safari here — use Chrome/Edge/Firefox to test.
+
 ## 2026-06-04 — Replaced `window.confirm()` with a promise-based modal #decision
 
 Same theme as the select swap: the prayer wall's "Mark answered" / "Remove"

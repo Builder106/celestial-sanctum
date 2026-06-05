@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Capacitor } from '@capacitor/core';
 import { FirebaseMessaging } from '@capacitor-firebase/messaging';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { type Messaging, getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { type Messaging, getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging';
 
 import { AuthService } from './auth.service';
 import { FirebaseService } from './firebase.service';
@@ -78,18 +78,35 @@ export class MessagingService {
       return result.token;
     }
 
-    // Web: needs the messaging instance, service worker registration,
-    // and VAPID key. Service worker registration is left to the
-    // consumer (typically in app.config.ts or main.ts) — by the time
-    // requestAndRegister is called, a SW should be active.
+    // Web: needs FCM web-push support, the messaging instance, a service
+    // worker, and the VAPID key. Each failure mode throws a distinct message
+    // so the opt-in UI can tell the member what to do (rather than silently
+    // looking "on" with no token registered — Safari in particular grants
+    // permission but can't complete getToken).
+    if (!firebaseVapidKey || !(await isSupported().catch(() => false))) {
+      throw new Error(
+        'Push notifications aren’t supported in this browser. Try Chrome, Edge, or Firefox.',
+      );
+    }
     const messaging = this.messaging();
-    if (!messaging || !firebaseVapidKey) return null;
+    if (!messaging) {
+      throw new Error(
+        'Push notifications aren’t supported in this browser. Try Chrome, Edge, or Firefox.',
+      );
+    }
     const granted = await Notification.requestPermission();
     this.permission.set(granted);
-    if (granted !== 'granted') return null;
-    const token = await getToken(messaging, { vapidKey: firebaseVapidKey });
-    this.token.set(token);
-    return token;
+    if (granted !== 'granted') {
+      throw new Error('Notifications are blocked. Enable them for this site in your browser settings.');
+    }
+    try {
+      const token = await getToken(messaging, { vapidKey: firebaseVapidKey });
+      this.token.set(token);
+      return token;
+    } catch {
+      // Permission was granted but the push subscription couldn't be created.
+      throw new Error('Couldn’t register this device for push. Reload and try again, or use Chrome.');
+    }
   }
 
   /**

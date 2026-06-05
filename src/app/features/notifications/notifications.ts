@@ -45,7 +45,7 @@ import { SanctumMark } from '../../shared/ui/sanctum-mark';
         </sanctum-card>
       } @else {
         <sanctum-card variant="paper" class="block mb-6">
-          @if (messaging.permission() === 'granted') {
+          @if (messaging.token()) {
             <p class="font-body text-sm text-sanctum-gold font-semibold">
               ✓ Push notifications are on for this device.
             </p>
@@ -56,10 +56,8 @@ import { SanctumMark } from '../../shared/ui/sanctum-mark';
             <button sanctumBtn variant="primary" size="md" [disabled]="enabling()" (click)="enablePush()">
               {{ enabling() ? 'Enabling…' : 'Enable notifications' }}
             </button>
-            @if (messaging.permission() === 'denied') {
-              <p class="mt-3 font-body text-sm text-sanctum-burgundy">
-                Notifications are blocked — enable them in your browser or device settings.
-              </p>
+            @if (pushError()) {
+              <p class="mt-3 font-body text-sm text-sanctum-burgundy">{{ pushError() }}</p>
             }
           }
         </sanctum-card>
@@ -104,6 +102,7 @@ export class Notifications {
   protected readonly loading = signal(true);
   protected readonly enabling = signal(false);
   protected readonly saved = signal(false);
+  protected readonly pushError = signal<string | null>(null);
 
   constructor() {
     this.seo.set({
@@ -124,6 +123,17 @@ export class Notifications {
       }
       if (this.auth.signedIn()) {
         this.categories.set(await this.messaging.loadPrefs());
+        // If this device already has OS permission, silently (re)register the
+        // FCM token so the "on" state reflects a real token — and so any prior
+        // subscription saved without one (the old permission-only path) heals.
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          try {
+            const token = await this.messaging.requestAndRegister();
+            if (token) await this.persist();
+          } catch {
+            /* unsupported / blocked — the UI falls back to the Enable button */
+          }
+        }
       }
     } catch {
       /* ignore */
@@ -135,11 +145,18 @@ export class Notifications {
   protected async enablePush(): Promise<void> {
     if (this.enabling()) return;
     this.enabling.set(true);
+    this.pushError.set(null);
     try {
-      await this.messaging.requestAndRegister();
-      await this.persist();
-    } catch {
-      /* ignore */
+      const token = await this.messaging.requestAndRegister();
+      if (token) {
+        await this.persist();
+      } else {
+        this.pushError.set('Couldn’t turn on notifications. Please try again.');
+      }
+    } catch (e) {
+      this.pushError.set(
+        e instanceof Error ? e.message : 'Couldn’t turn on notifications. Please try again.',
+      );
     } finally {
       this.enabling.set(false);
     }
