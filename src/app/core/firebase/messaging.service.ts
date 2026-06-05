@@ -100,12 +100,20 @@ export class MessagingService {
       throw new Error('Notifications are blocked. Enable them for this site in your browser settings.');
     }
     try {
-      const token = await getToken(messaging, { vapidKey: firebaseVapidKey });
+      // Trim defensively — a VAPID key pasted into an env var with a trailing
+      // newline yields an invalid applicationServerKey and getToken throws.
+      const token = await getToken(messaging, { vapidKey: firebaseVapidKey.trim() });
       this.token.set(token);
       return token;
-    } catch {
+    } catch (e) {
       // Permission was granted but the push subscription couldn't be created.
-      throw new Error('Couldn’t register this device for push. Reload and try again, or use Chrome.');
+      // Surface the FCM error code (e.g. messaging/token-subscribe-failed for a
+      // bad VAPID key) so the cause is visible instead of guessed.
+      const code = (e as { code?: string }).code;
+      console.error('[push] getToken failed', e);
+      throw new Error(
+        `Couldn’t register this device for push${code ? ` (${code})` : ''}. Reload and try again, or use Chrome.`,
+      );
     }
   }
 
