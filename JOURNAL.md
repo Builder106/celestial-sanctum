@@ -6,6 +6,20 @@
 > Tag with `#decision` / `#pivot` / `#incident` / `#quote` / `#feedback` /
 > `#milestone`. One paragraph max per entry.
 
+## 2026-06-05 — Web push broken by a one-character-truncated VAPID key #incident
+
+The live notification test kept failing even in Chrome with `getToken()`
+throwing. Surfacing the DOMException code (`15` = `InvalidAccessError`, what
+`PushManager.subscribe()` throws for an invalid `applicationServerKey`) pointed
+straight at the VAPID key. Decoding it: 86 base64url chars → 64 bytes, but a
+valid uncompressed P-256 key is 65 bytes (`0x04` + X + Y). It was missing a
+single character (`RkYV6J` should have been `RkYVV6J`) — a copy slip when it was
+first pasted into the env, invisible because the length still *looked* right.
+Re-copied the full key, validated it (65 bytes), reset the Vercel env. To stop
+this recurring, `gen-firebase-env.mjs` now base64-decodes the VAPID key at build
+time and fails the build unless it's exactly 65 bytes starting with `0x04`. A
+malformed push key can never silently deploy again.
+
 ## 2026-06-04 — Push opt-in reported "on" off permission, not a token #incident
 
 Live notification test: a clergy send to "Parish news" returned 0 subscribers
