@@ -71,7 +71,7 @@
     "jsdom": "^29.1.1",
     "playwright-bdd": "^9.0.0",
     "postcss": "^8.5.15",
-    "prettier": "^3.8.1",
+    "prettier": "^3.8.4",
     "tailwindcss": "^4.3.0",
     "typescript": "~6.0.0",
     "vitest": "^4.1.8"
